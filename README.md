@@ -5,6 +5,6 @@
 
 #### To Do's
 - [x] KLT
-- [ ] Filtering Good Points 
+- [x] Filtering Good Points 
 - [ ] Bundle Adjustment
 - [ ] CRF Smoothening

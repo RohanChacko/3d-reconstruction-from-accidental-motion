@@ -25,5 +25,9 @@ if __name__ == '__main__':
     # Generate Optical Flow
     optical_flow = klt_tracker.generate_optical_flow()
 
+    # print(optical_flow)
+
+    optical_flow = klt_tracker.homography_filter()
+    print('Number of inlier points: ',len(optical_flow))
     # Draw Optical Flow
     klt_tracker.draw_optical_flow()

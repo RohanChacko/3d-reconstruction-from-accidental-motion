@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from utilities import *
+from itertools import compress
 
 class KLT_Tracker:
     
@@ -79,13 +80,17 @@ class KLT_Tracker:
         # calculating the number of frames each point is an inlier in
         for j in range(1, no_of_cams):
             
-            homography_matrix, inliers = cv2.findhomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
+            homography_matrix, inliers = cv2.findHomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
             mask = mask + inliers
         
         # mask ensuring points present in cameras below the threshold percentage are removed 
+
         mask = (mask >= threshold * no_of_cams)
 
-        self.optical_flow = self.optical_flow[:, mask, :]
+            
+        self.optical_flow = list(compress(self.optical_flow, mask))
+
+        return self.optical_flow
 
 
 
