@@ -43,6 +43,7 @@ class KLT_Tracker:
         self.optical_flow = optical_flow
 
         return NULL
+
     def track_features(self):
         pass
     
@@ -50,17 +51,36 @@ class KLT_Tracker:
         '''
         Function to remove outliers points from optical flow
         '''
+        
         no_of_cams = len(self.optical_flow[0])
         no_of_pts = len(self.optical_flow)
 
         image_pts = np.zeros((no_of_cams, no_of_pts, 2))
+
+        # creating image_pts with dimensions as camId, pointId, 2
         for i in range(no_of_pts):
             for j in range(no_of_cams):
+
                 image_pts[j, i, 0] = self.optical_flow[i][j][0]
                 image_pts[j, i, 1] = self.optical_flow[i][j][1]
 
         reference_image_pts = image_pts[0, :, :]    
 
+        mask = np.zeros((no_of_pts, 1))
+        
+        # calculating the number of frames each point is an inlier in
         for j in range(1, no_of_cams):
             
-            homography_matrix = cv2.findhomography()    
+            homography_matrix, inliers = cv2.findhomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
+            mask = mask + inliers
+        
+        # mask ensuring points present in cameras below the threshold percentage are removed 
+        mask = (mask >= threshold * no_of_cams)
+
+
+
+
+
+
+
+
