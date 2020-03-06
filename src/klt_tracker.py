@@ -47,7 +47,7 @@ class KLT_Tracker:
     def track_features(self):
         pass
     
-    def homography_filter(self, threshold):
+    def homography_filter(self, threshold = 0.9):
         '''
         Function to remove outliers points from optical flow
         '''
@@ -77,6 +77,8 @@ class KLT_Tracker:
         # mask ensuring points present in cameras below the threshold percentage are removed 
         mask = (mask >= threshold * no_of_cams)
 
+        self.optical_flow = self.optical_flow[:, mask, :]
+        
 
 
 
