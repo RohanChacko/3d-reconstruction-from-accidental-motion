@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from utilities import *
-=======
-import numpy as np
-import cv2
-
->>>>>>> 13d954db90194ad0f39fddfbb33c237ed14cf6d5
 
 class KLT_Tracker:
     
@@ -92,7 +86,7 @@ class KLT_Tracker:
         mask = (mask >= threshold * no_of_cams)
 
         self.optical_flow = self.optical_flow[:, mask, :]
-        
+
 
 
 
