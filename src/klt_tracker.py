@@ -1,6 +1,13 @@
+<<<<<<< HEAD
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+from utilities import *
+=======
 import numpy as np
 import cv2
 
+>>>>>>> 13d954db90194ad0f39fddfbb33c237ed14cf6d5
 
 class KLT_Tracker:
     
@@ -13,7 +20,7 @@ class KLT_Tracker:
         self.optical_flow = [ [(i.ravel()[0], i.ravel()[1])] for i in self.reference_features]
 
     def get_features(self):
-        return cv2.goodFeaturesToTrack(self.reference_image, 
+        return cv2.goodFeaturesToTrack(gray(self.reference_image), 
                                 mask = None, 
                                 **self.feature_params)
 
@@ -23,8 +30,8 @@ class KLT_Tracker:
         optical_flow = self.optical_flow
         reference_features = self.reference_features
         for current_image in self.images:
-            current_features, status, error = cv2.calcOpticalFlowPyrLK(self.reference_image, 
-                                                                       current_image, 
+            current_features, status, error = cv2.calcOpticalFlowPyrLK(gray(self.reference_image), 
+                                                                       gray(current_image), 
                                                                        reference_features, 
                                                                        None, 
                                                                        **self.lk_params)
@@ -42,10 +49,17 @@ class KLT_Tracker:
         self.reference_features = reference_features
         self.optical_flow = optical_flow
 
-        return NULL
-
-    def track_features(self):
-        pass
+        return optical_flow
+        
+    def draw_optical_flow(self):
+        image = self.reference_image.copy()
+        mask = np.zeros_like(image)
+        for feature in self.optical_flow:
+            feature = np.array(feature, np.int32).reshape((-1,1,2))
+            cv2.polylines(mask, [feature], False, (255,0,0))
+        image = cv2.add(image, mask)
+        plt.imshow(image)
+        plt.show()
     
     def homography_filter(self, threshold = 0.9):
         '''
