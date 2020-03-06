@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from utilities import *
+=======
+import numpy as np
+import cv2
+
+>>>>>>> 13d954db90194ad0f39fddfbb33c237ed14cf6d5
 
 class KLT_Tracker:
     
@@ -19,6 +25,7 @@ class KLT_Tracker:
                                 **self.feature_params)
 
     def generate_optical_flow(self):
+
 
         optical_flow = self.optical_flow
         reference_features = self.reference_features
@@ -53,3 +60,41 @@ class KLT_Tracker:
         image = cv2.add(image, mask)
         plt.imshow(image)
         plt.show()
+    
+    def homography_filter(self, threshold):
+        '''
+        Function to remove outliers points from optical flow
+        '''
+        
+        no_of_cams = len(self.optical_flow[0])
+        no_of_pts = len(self.optical_flow)
+
+        image_pts = np.zeros((no_of_cams, no_of_pts, 2))
+
+        # creating image_pts with dimensions as camId, pointId, 2
+        for i in range(no_of_pts):
+            for j in range(no_of_cams):
+
+                image_pts[j, i, 0] = self.optical_flow[i][j][0]
+                image_pts[j, i, 1] = self.optical_flow[i][j][1]
+
+        reference_image_pts = image_pts[0, :, :]    
+
+        mask = np.zeros((no_of_pts, 1))
+        
+        # calculating the number of frames each point is an inlier in
+        for j in range(1, no_of_cams):
+            
+            homography_matrix, inliers = cv2.findhomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
+            mask = mask + inliers
+        
+        # mask ensuring points present in cameras below the threshold percentage are removed 
+        mask = (mask >= threshold * no_of_cams)
+
+
+
+
+
+
+
+
