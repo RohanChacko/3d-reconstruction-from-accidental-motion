@@ -1,2 +1,3 @@
-./datasets
+./datasets/*
 .ipynb_checkpoints
+./ceres-bin/*
