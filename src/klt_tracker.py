@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from utilities import *
-=======
-import numpy as np
-import cv2
-
->>>>>>> 13d954db90194ad0f39fddfbb33c237ed14cf6d5
 
 class KLT_Tracker:
     
@@ -90,6 +84,16 @@ class KLT_Tracker:
         
         # mask ensuring points present in cameras below the threshold percentage are removed 
         mask = (mask >= threshold * no_of_cams)
+
+    def generate_initial_point_cloud(self):
+        reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
+        reference_features_textures = self.reference_image[reference_features[:,0], reference_features[:,1], :]
+        # reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
+        reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
+        print(reference_features_points.shape)
+        print(self.reference_image.shape)
+        print(reference_features_textures.shape)
+        write_point_cloud('pink.ply', reference_features_points, reference_features_textures)
 
 
 

@@ -15,9 +15,8 @@ if __name__ == '__main__':
     # Read Images
     images = []
     for image in image_files:
-        images.append(cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB))
-
-    print(len(images))
+        # images.append(cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB))
+        images.append(cv2.imread(image))
 
     # Initialize KLT Tracker
     klt_tracker = KLT_Tracker(images, config.feature_params, config.lk_params)
@@ -27,3 +26,5 @@ if __name__ == '__main__':
 
     # Draw Optical Flow
     klt_tracker.draw_optical_flow()
+
+    klt_tracker.generate_initial_point_cloud()
