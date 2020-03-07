@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 from glob import glob
 from klt_tracker import KLT_Tracker
+from bundle_adjuster import BundleAdjuster
 import config
 
 if __name__ == '__main__':
@@ -24,11 +25,20 @@ if __name__ == '__main__':
     # Generate Optical Flow
     optical_flow = klt_tracker.generate_optical_flow()
 
-    # print(optical_flow)
-
+    # Filter out Outliers
     optical_flow = klt_tracker.homography_filter()
-    print('Number of inlier points: ',len(optical_flow))
+
+    # Generate Bundle file
+    
+
     # Draw Optical Flow
     klt_tracker.draw_optical_flow()
 
-    klt_tracker.generate_initial_point_cloud()
+    # Generate Initialization Point Cloud
+    klt_tracker.generate_initial_point_cloud(config.INITIAL_POINT_CLOUD)
+
+    # Bundle Adjustment
+    bundle_adjuster = BundleAdjuster(config.INITIAL_POINT_CLOUD, 
+                                     config.FINAL_POINT_CLOUD,
+                                     config.BUNDLE_FILE)
+

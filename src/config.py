@@ -3,6 +3,15 @@ import cv2
 # Image Directory
 IMAGE_DIR = '../datasets/0016_still'
 
+# Initial Point Cloud 
+INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
+
+# FINAL Point Cloud
+FINAL_POINT_CLOUD = '../output/final_point_cloud.ply'
+
+# Bundle File
+BUNDLE_FILE = '../output/bundle.out'
+
 # Shi-Tomasi parameters
 feature_params = dict(maxCorners = 300, 
                       qualityLevel = 0.2, 
