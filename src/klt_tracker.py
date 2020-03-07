@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from utilities import *
+from itertools import compress
 
 class KLT_Tracker:
     
@@ -55,7 +56,7 @@ class KLT_Tracker:
         plt.imshow(image)
         plt.show()
     
-    def homography_filter(self, threshold):
+    def homography_filter(self, threshold = 0.9):
         '''
         Function to remove outliers points from optical flow
         '''
@@ -79,11 +80,18 @@ class KLT_Tracker:
         # calculating the number of frames each point is an inlier in
         for j in range(1, no_of_cams):
             
-            homography_matrix, inliers = cv2.findhomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
+            homography_matrix, inliers = cv2.findHomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
             mask = mask + inliers
         
         # mask ensuring points present in cameras below the threshold percentage are removed 
+
         mask = (mask >= threshold * no_of_cams)
+
+        self.optical_flow = list(compress(self.optical_flow, mask))
+
+        return self.optical_flow
+
+
 
     def generate_initial_point_cloud(self):
         reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
@@ -94,10 +102,6 @@ class KLT_Tracker:
         print(self.reference_image.shape)
         print(reference_features_textures.shape)
         write_point_cloud('pink.ply', reference_features_points, reference_features_textures)
-
-
-
-
 
 
 
