@@ -6,13 +6,14 @@ from itertools import compress
 
 class KLT_Tracker:
     
-    def __init__(self, images, feature_params, lk_params):
+    def __init__(self, images, feature_params, lk_params, camera_params):
         self.reference_image = images[0]
         self.images = images[1:]
         self.feature_params = feature_params
         self.lk_params = lk_params
         self.reference_features = self.get_features()
-        self.optical_flow = [ [(i.ravel()[0], i.ravel()[1])] for i in self.reference_features]
+        self.optical_flow = [[(i.ravel()[0], i.ravel()[1])] for i in self.reference_features]
+        self.K = construct_camera_matrix(camera_params)
 
     def get_features(self):
         return cv2.goodFeaturesToTrack(gray(self.reference_image), 
@@ -86,9 +87,12 @@ class KLT_Tracker:
         # mask ensuring points present in cameras below the threshold percentage are removed 
 
         mask = (mask >= threshold * no_of_cams)
-
+        # print(mask[:,0])
+        reference_image_pts = reference_image_pts[mask[:, 0], :]
+        # print(reference_image_pts.shape)
         self.optical_flow = list(compress(self.optical_flow, mask))
-
+        self.reference_features = np.reshape(reference_image_pts, (reference_image_pts.shape[0], 1, 2))
+        
         return self.optical_flow
 
 
@@ -97,9 +101,19 @@ class KLT_Tracker:
         reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
         reference_features_textures = self.reference_image[reference_features[:,0], reference_features[:,1], :]
         # reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
+        
+        points3D = back_project_points(self.K, reference_features)
+        points3D = points3D.T
+        points3D = points3D / points3D[2, :]
+        depthVector = np.random.uniform(2, 4, (points3D.shape[1], 1))
+        points3D = points3D / depthVector[:, 0]
+        points3D = points3D.T
+
         reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
         # Scale the points correctly
-        write_point_cloud(point_cloud_path, reference_features_points, reference_features_textures)
+        # write_point_cloud(point_cloud_path, reference_features_points, reference_features_textures)
+        write_point_cloud(point_cloud_path, points3D, reference_features_textures)
+
 
     def generate_bundle_file(self, bundle_file_path):
         pass

@@ -4,6 +4,7 @@ from glob import glob
 from klt_tracker import KLT_Tracker
 from bundle_adjuster import BundleAdjuster
 import config
+from utilities import * 
 
 if __name__ == '__main__':
 
@@ -20,14 +21,18 @@ if __name__ == '__main__':
         images.append(cv2.imread(image))
 
     # Initialize KLT Tracker
-    klt_tracker = KLT_Tracker(images, config.feature_params, config.lk_params)
+    klt_tracker = KLT_Tracker(images, config.feature_params, config.lk_params, config.CAMERA_PARAMS)
 
     # Generate Optical Flow
     optical_flow = klt_tracker.generate_optical_flow()
 
     # Filter out Outliers
     optical_flow = klt_tracker.homography_filter()
+    
+    # back projecting rays in camera reference frame
+    points3D = back_project_points(klt_tracker.K, klt_tracker.reference_features.reshape(klt_tracker.reference_features.shape[0], 2))
 
+    print(points3D.shape)
     # Generate Bundle file
     
 
