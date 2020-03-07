@@ -20,15 +20,26 @@ feature_params = dict(maxCorners = 300,
                       )
 
 # Lucas-Kanade parameters
-lk_params = dict(winSize = (15,15), 
+lk_params = dict(
+                 winSize = (15,15), 
                  maxLevel = 2, 
                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
                  )
 
 # Ceres-Solver parameters
-CERES_PARAMS = dict(solver = '../ceres-bin/bin/bundle_adjuster',
+CERES_PARAMS = dict(
+                    solver = '../ceres-bin/bin/bundle_adjuster',
                     maxIterations = 100,
                     input_ply = '',
                     inner_iterations = 'true',
                     nonmonotonic_steps = 'false'
+                    )
+
+CAMERA_PARAMS = dict(fx=1781,
+                     fy=1781,
+                     cx=960,
+                     cy=540,
+                     k1=0,
+                     k2=0,
+                     s=0,
                     )
