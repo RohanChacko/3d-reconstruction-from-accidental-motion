@@ -99,10 +99,8 @@ class KLT_Tracker:
 
     def generate_initial_point_cloud(self, point_cloud_path):
         reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
-        reference_features_textures = self.reference_image[reference_features[:,0], reference_features[:,1], :] / 255
+        reference_features_textures = (self.reference_image[reference_features[:,0], reference_features[:,1], :] / 255.0).astype('float64')
         reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
-
-        print(reference_features_textures)
 
         # point_map = np.zeros((0,3))
         # color_map = np.zeros((0,3))
