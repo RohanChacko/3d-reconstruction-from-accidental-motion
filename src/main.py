@@ -17,8 +17,8 @@ if __name__ == '__main__':
     # Read Images
     images = []
     for image in image_files:
-        # images.append(cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB))
-        images.append(cv2.imread(image))
+        images.append(cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB))
+        # images.append(cv2.imread(image))
 
     # Initialize KLT Tracker
     klt_tracker = KLT_Tracker(images, config.feature_params, config.lk_params, config.CAMERA_PARAMS)
@@ -45,5 +45,6 @@ if __name__ == '__main__':
     # Bundle Adjustment
     bundle_adjuster = BundleAdjuster(config.INITIAL_POINT_CLOUD, 
                                      config.FINAL_POINT_CLOUD,
-                                     config.BUNDLE_FILE)
+                                     config.BUNDLE_FILE,
+                                     config.CERES_PARAMS)
 

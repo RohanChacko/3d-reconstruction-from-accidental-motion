@@ -99,9 +99,27 @@ class KLT_Tracker:
 
     def generate_initial_point_cloud(self, point_cloud_path):
         reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
-        reference_features_textures = self.reference_image[reference_features[:,0], reference_features[:,1], :]
-        # reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
+        reference_features_textures = self.reference_image[reference_features[:,0], reference_features[:,1], :] / 255
+        reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
+
+        print(reference_features_textures)
+
+        # point_map = np.zeros((0,3))
+        # color_map = np.zeros((0,3))
+        # print(self.reference_image.shape)
+
+        # for i in range(0,1080,5):
+        #     print(i)
+        #     for j in range(0,1920,5):
+        #         point_map = np.concatenate((point_map, np.array([[i, j, 0]])))
+        #         color_map = np.concatenate((color_map, [self.reference_image[i,j,:]]))
         
+        # print(point_map.shape)
+        # color_map = color_map/255
+        # for i in range(len(color_map)):
+        #     print(color_map[i])
+        # color_map = color_map.astype('uint32')
+
         points3D = back_project_points(self.K, reference_features)
         points3D = points3D.T
         points3D = points3D / points3D[2, :]
@@ -113,6 +131,7 @@ class KLT_Tracker:
         # Scale the points correctly
         # write_point_cloud(point_cloud_path, reference_features_points, reference_features_textures)
         write_point_cloud(point_cloud_path, points3D, reference_features_textures)
+        # write_point_cloud(point_cloud_path, point_map, color_map)
 
 
     def generate_bundle_file(self, bundle_file_path):
