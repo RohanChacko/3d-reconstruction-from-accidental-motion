@@ -42,9 +42,13 @@ if __name__ == '__main__':
     # Generate Initialization Point Cloud
     klt_tracker.generate_initial_point_cloud(config.INITIAL_POINT_CLOUD)
 
+    # Generate bundle adjustment input file
+    klt_tracker.generate_bundle_file('../output/bundle.out')
+    
     # Bundle Adjustment
-    bundle_adjuster = BundleAdjuster(config.INITIAL_POINT_CLOUD, 
-                                     config.FINAL_POINT_CLOUD,
-                                     config.BUNDLE_FILE,
-                                     config.CERES_PARAMS)
+
+    # bundle_adjuster = BundleAdjuster(config.INITIAL_POINT_CLOUD, 
+    #                                  config.FINAL_POINT_CLOUD,
+    #                                  config.BUNDLE_FILE,
+    #                                  config.CERES_PARAMS)
 

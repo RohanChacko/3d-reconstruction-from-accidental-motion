@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from utilities import *
 from itertools import compress
+import config
 
 class KLT_Tracker:
     
@@ -14,6 +15,8 @@ class KLT_Tracker:
         self.reference_features = self.get_features()
         self.optical_flow = [[(i.ravel()[0], i.ravel()[1])] for i in self.reference_features]
         self.K = construct_camera_matrix(camera_params)
+        self.reference_features_world_points = None
+        self.reference_features_textures = None
 
     def get_features(self):
         return cv2.goodFeaturesToTrack(gray(self.reference_image), 
@@ -95,8 +98,6 @@ class KLT_Tracker:
         
         return self.optical_flow
 
-
-
     def generate_initial_point_cloud(self, point_cloud_path):
         reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
         reference_features_textures = (self.reference_image[reference_features[:,0], reference_features[:,1], :] / 255.0).astype('float64')
@@ -125,17 +126,58 @@ class KLT_Tracker:
         points3D = points3D / depthVector[:, 0]
         points3D = points3D.T
 
-        reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
+        # reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
+        self.reference_features_world_points = points3D
+        self.reference_features_textures = reference_features_textures
+
         # Scale the points correctly
         # write_point_cloud(point_cloud_path, reference_features_points, reference_features_textures)
-        write_point_cloud(point_cloud_path, points3D, reference_features_textures)
+        # write_point_cloud(point_cloud_path, points3D, reference_features_textures)
         # write_point_cloud(point_cloud_path, point_map, color_map)
 
-
     def generate_bundle_file(self, bundle_file_path):
+        '''
+        Function to create bundle file for ceres solver
+        '''
+
+        f = open(bundle_file_path, 'w')
+        num_of_cam = len(self.optical_flow[0])
+        num_of_pts = len(self.optical_flow)
+        
+        # printing number of cameras and points
+        content = '%d %d\n' % (num_of_cam, num_of_pts)
+        f.write(content)
+
+        content = print_camera_params()
+        file_content = ''
+
+        # printing camera initializations
+        for i in range(num_of_cam):
+            file_content = file_content + content
+        
+        f.write(file_content)
+
+        file_content = ''
+        for pt in range(num_of_pts):
+            
+            point = self.reference_features_world_points[pt, :]
+            color = self.reference_features_textures[pt, :]
+            content = '%f %f %f\n %f %f %f\n' % (point[0], point[1], point[2], color[0], color[1], color[2])
+            
+            for cam in range(num_of_cam):
+                # print(pt, cam)
+                # print(self.optical_flow[pt][cam])
+
+                contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0], self.optical_flow[pt][cam][1])
+                content = content + contentLine
+
+            content = content + '\n'     
+            file_content = file_content + content
+
+        f.write(file_content)
+        f.close()  
         pass
     
-
 
 
 
