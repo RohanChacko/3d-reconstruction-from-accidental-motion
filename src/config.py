@@ -13,10 +13,10 @@ FINAL_POINT_CLOUD = '../output/final_point_cloud.ply'
 BUNDLE_FILE = '../output/bundle.out'
 
 # Shi-Tomasi parameters
-feature_params = dict(maxCorners = 300, 
-                      qualityLevel = 0.2, 
-                      minDistance = 2, 
-                      blockSize = 7
+feature_params = dict(maxCorners = 800, 
+                      qualityLevel = 0.05, 
+                      minDistance = 10, 
+                      blockSize = 11
                       )
 
 # Lucas-Kanade parameters
