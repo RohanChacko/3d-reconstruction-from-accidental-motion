@@ -343,8 +343,8 @@ void SolveProblem(const char* filename) {
   BuildProblem(&bal_problem, &problem);
   Solver::Options options;
   SetSolverOptionsFromFlags(&bal_problem, &options);
-  options.gradient_tolerance = 1e-10;
-  options.function_tolerance = 1e-10;
+  options.gradient_tolerance = 1e-6;
+  options.function_tolerance = 1e-6;
   Solver::Summary summary;
   Solve(options, &problem, &summary);
   std::cout << summary.FullReport() << "\n";
