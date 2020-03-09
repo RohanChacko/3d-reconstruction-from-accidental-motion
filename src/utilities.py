@@ -1,6 +1,7 @@
 import cv2
 import open3d as o3d
 import numpy as np
+import config
 
 
 def gray(image):
@@ -40,3 +41,19 @@ def back_project_points(K, imagePts):
     points3D = points3D.T
 
     return points3D
+
+def print_camera_params():
+    '''
+    Function that returns string output to be written in the bundle adjustment file for camera initialization
+    '''
+    camera_params = config.CAMERA_PARAMS
+    content = '%d %d %d\n' % (camera_params['fx'], camera_params['k1'], camera_params['k2'])
+    rotation = np.eye(3)
+    translation = np.zeros(3)
+
+    for i in range(3):
+        rot = '%d %d %d\n' % (rotation[i, 0], rotation[i, 1], rotation[i, 2])
+        content = content + rot
+    
+    content = content + '0 0 0\n'
+    return content
