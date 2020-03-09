@@ -19,9 +19,9 @@ class KLT_Tracker:
         self.reference_features_textures = None
 
     def get_features(self):
-        return cv2.goodFeaturesToTrack(gray(self.reference_image), 
-                                mask = None, 
-                                **self.feature_params)
+        return cv2.goodFeaturesToTrack(gray(self.reference_image),
+                                mask = None,
+                                **self.feature_params) #, useHarrisDetector=True, k=0.04)
 
     def generate_optical_flow(self):
 
