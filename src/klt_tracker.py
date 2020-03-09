@@ -126,7 +126,7 @@ class KLT_Tracker:
         points3D = points3D / depthVector[:, 0]
         points3D = points3D.T
 
-        reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
+        # reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
         self.reference_features_world_points = points3D
         self.reference_features_textures = reference_features_textures
 
@@ -155,7 +155,25 @@ class KLT_Tracker:
         for i in range(num_of_cam):
             file_content = file_content + content
         
-        
+        f.write(file_content)
+
+        file_content = ''
+        for pt in range(num_of_pts):
+            
+            point = self.reference_features_world_points[pt, :]
+            color = self.reference_features_textures[pt, :]
+            content = '%f %f %f\n %f %f %f\n' % (point[0], point[1], point[2], color[0], color[1], color[2])
+            
+            for cam in range(num_of_cam):
+                # print(pt, cam)
+                # print(self.optical_flow[pt][cam])
+
+                contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0], self.optical_flow[pt][cam][1])
+                content = content + contentLine
+
+            content = content + '\n'     
+            file_content = file_content + content
+
         f.write(file_content)
         f.close()  
         pass
