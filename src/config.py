@@ -1,7 +1,7 @@
 import cv2
 
 # Image Directory
-IMAGE_DIR = '../datasets/0038_still'
+IMAGE_DIR = '../datasets/0016_still'
 
 # Initial Point Cloud 
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
