@@ -3,13 +3,13 @@ import subprocess
 class BundleAdjuster:
 
     def __init__(self, input_ply, output_ply, bundle_file, ceres_params):
-        self.solver = ceres_params.solver
+        self.solver = ceres_params['solver']
         self.input_ply = input_ply
         self.output_ply = output_ply
         self.bundle_file = bundle_file
-        self.max_iterations = ceres_params.max_iterations
-        self.inner_iterations = ceres_params.inner_iterations
-        self.nonmonotonic_steps = ceres_params.nonmonotonic_steps
+        self.max_iterations = ceres_params['maxIterations']
+        self.inner_iterations = ceres_params['inner_iterations']
+        self.nonmonotonic_steps = ceres_params['nonmonotonic_steps']
 
     def bundle_adjust(self):
         subprocess.call([

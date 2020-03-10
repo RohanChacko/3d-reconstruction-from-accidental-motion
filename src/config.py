@@ -13,24 +13,28 @@ FINAL_POINT_CLOUD = '../output/final_point_cloud.ply'
 BUNDLE_FILE = '../output/bundle.out'
 
 # Shi-Tomasi parameters
-feature_params = dict(maxCorners = 800, 
-                      qualityLevel = 0.05, 
-                      minDistance = 10, 
-                      blockSize = 11
+feature_params = dict(maxCorners = 5000, 
+                      qualityLevel = 0.03, 
+                      minDistance = 40, 
+                      blockSize = 20
                       )
 
 # Lucas-Kanade parameters
-lk_params = dict(
-                 winSize = (15,15), 
-                 maxLevel = 2, 
-                 criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
-                 )
+# lk_params = dict(
+#                  winSize = (8,8), 
+#                  maxLevel = 2, 
+#                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
+#                  )
 
+lk_params = dict(   winSize  = (25,25),
+                 	maxLevel = 8,
+            		criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 20, 0.3))
 # Ceres-Solver parameters
 CERES_PARAMS = dict(
                     solver = '../ceres-bin/bin/bundle_adjuster',
-                    maxIterations = 100,
-                    input_ply = '',
+                    maxIterations = 1000,
+                    input_ply = '../output/initial.ply',
+                    output_ply = '../output/final.ply',
                     inner_iterations = 'true',
                     nonmonotonic_steps = 'false'
                     )

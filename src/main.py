@@ -30,9 +30,9 @@ if __name__ == '__main__':
     optical_flow = klt_tracker.homography_filter()
     
     # back projecting rays in camera reference frame
-    points3D = back_project_points(klt_tracker.K, klt_tracker.reference_features.reshape(klt_tracker.reference_features.shape[0], 2))
+    # points3D = back_project_points(klt_tracker.K, klt_tracker.reference_features.reshape(klt_tracker.reference_features.shape[0], 2))
 
-    print(points3D.shape)
+    # print(points3D.shape)
     # Generate Bundle file
     
 
@@ -46,9 +46,10 @@ if __name__ == '__main__':
     klt_tracker.generate_bundle_file('../output/bundle.out')
     
     # Bundle Adjustment
+    ceres_params = config.CERES_PARAMS
+    bundle_adjuster = BundleAdjuster(config.INITIAL_POINT_CLOUD, 
+                                     config.FINAL_POINT_CLOUD,
+                                     config.BUNDLE_FILE,
+                                     config.CERES_PARAMS)
 
-    # bundle_adjuster = BundleAdjuster(config.INITIAL_POINT_CLOUD, 
-    #                                  config.FINAL_POINT_CLOUD,
-    #                                  config.BUNDLE_FILE,
-    #                                  config.CERES_PARAMS)
-
+    bundle_adjuster.bundle_adjust()

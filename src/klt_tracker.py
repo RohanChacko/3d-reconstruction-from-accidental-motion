@@ -21,7 +21,7 @@ class KLT_Tracker:
     def get_features(self):
         return cv2.goodFeaturesToTrack(gray(self.reference_image),
                                 mask = None,
-                                **self.feature_params) #, useHarrisDetector=True, k=0.04)
+                                **self.feature_params)
 
     def generate_optical_flow(self):
 
@@ -84,7 +84,7 @@ class KLT_Tracker:
         # calculating the number of frames each point is an inlier in
         for j in range(1, no_of_cams):
             
-            homography_matrix, inliers = cv2.findHomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 3.0)
+            homography_matrix, inliers = cv2.findHomography(image_pts[j, :, :], reference_image_pts, cv2.RANSAC, 5.0)
             mask = mask + inliers
         
         # mask ensuring points present in cameras below the threshold percentage are removed 
@@ -99,11 +99,25 @@ class KLT_Tracker:
         return self.optical_flow
 
     def generate_initial_point_cloud(self, point_cloud_path):
-        reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint8')
-        # reference_features_textures = (self.reference_image[reference_features[:,0], reference_features[:,1], :] / 255.0).astype('float64')
-        reference_features_textures = (self.reference_image[reference_features[:,0], reference_features[:,1], :]).astype('uint32')
-        reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
+        reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint32')
+        reference_features_textures = (self.reference_image[reference_features[:,1], reference_features[:,0], :] / 255.0).astype('float64')
 
+
+        # no_of_cams = len(self.optical_flow[0])
+        # no_of_pts = len(self.optical_flow)
+        # image_pts = np.zeros((no_of_cams, no_of_pts, 2))
+
+        # # creating image_pts with dimensions as camId, pointId, 2
+        # for i in range(no_of_pts):
+        #     for j in range(no_of_cams):
+
+        #         image_pts[j, i, 0] = self.optical_flow[i][j][0]
+        #         image_pts[j, i, 1] = self.optical_flow[i][j][1]
+
+        # reference_features = image_pts[0, :, :].astype('uint16') 
+        # reference_features_textures = (self.reference_image[reference_features[:,0], reference_features[:,1], :]).astype('uint32')
+        reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
+        print(reference_features)
         # point_map = np.zeros((0,3))
         # color_map = np.zeros((0,3))
         # print(self.reference_image.shape)
@@ -119,21 +133,35 @@ class KLT_Tracker:
         # for i in range(len(color_map)):
         #     print(color_map[i])
         # color_map = color_map.astype('uint32')
+        points3D = np.hstack((reference_features, np.ones((reference_features.shape[0],1))))
 
-        points3D = back_project_points(self.K, reference_features)
+        # points3D = back_project_points(self.K, reference_features)
         points3D = points3D.T
+        # print(points3D, 'points3D')
+        
         points3D = points3D / points3D[2, :]
-        depthVector = np.random.uniform(2, 4, (points3D.shape[1], 1))
-        points3D = points3D / depthVector[:, 0]
-        points3D = points3D.T
+        depthVector = np.random.uniform(2, 4, (points3D.shape[1]))
+        # points3D[:,2] = points3D[:,2] * 700
+        
+        
+        cam_params = config.CAMERA_PARAMS
+        h = cam_params['cy'] * 2
+        w = cam_params['cx'] * 2
+        points3D[0, :] = points3D[0,:] - w / 2
+        points3D[1, :] = h / 2 - points3D[1,:] 
+        # points3D[:2, :] = points3D[:2, :] / config.CAMERA_PARAMS['fx']
+        points3D[2,:] = points3D[2,:] * 700 #config.CAMERA_PARAMS['fx'] / depthVector
 
+        # points3D[2,:] = points3D[2,:] * config.CAMERA_PARAMS['fx'] / depthVector
+        points3D = points3D.T
         # reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
+        # print(points3D, 'points3D')
         self.reference_features_world_points = points3D
         self.reference_features_textures = reference_features_textures
 
         # Scale the points correctly
         # write_point_cloud(point_cloud_path, reference_features_points, reference_features_textures)
-        # write_point_cloud(point_cloud_path, points3D, reference_features_textures)
+        write_point_cloud(point_cloud_path, points3D, reference_features_textures)
         # write_point_cloud(point_cloud_path, point_map, color_map)
 
     def generate_bundle_file(self, bundle_file_path):
@@ -157,7 +185,7 @@ class KLT_Tracker:
             file_content = file_content + content
         
         f.write(file_content)
-
+        # print(self.reference_features_world_points)
         file_content = ''
         for pt in range(num_of_pts):
             
@@ -168,8 +196,9 @@ class KLT_Tracker:
             for cam in range(num_of_cam):
                 # print(pt, cam)
                 # print(self.optical_flow[pt][cam])
+                contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0]- config.CAMERA_PARAMS['cx'], config.CAMERA_PARAMS['cy'] - self.optical_flow[pt][cam][1])
 
-                contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0], self.optical_flow[pt][cam][1])
+                # contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0], self.optical_flow[pt][cam][1])
                 content = content + contentLine
 
             content = content + '\n'     
