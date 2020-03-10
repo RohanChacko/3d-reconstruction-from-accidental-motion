@@ -71,6 +71,3 @@ class DenseCRF:
 		for i in range(iters):
 		    #print("KL-divergence at {}: {}".format(i, self.d.klDivergence(Q)))
 		    d.stepInference(Q, tmp1, tmp2)
-		
-
-i
