@@ -1,7 +1,7 @@
 import cv2
 
 # Image Directory
-IMAGE_DIR = '../datasets/0034_still'
+IMAGE_DIR = '../datasets/stone6_still'
 
 # Initial Point Cloud 
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -15,8 +15,8 @@ BUNDLE_FILE = '../output/bundle.out'
 # Shi-Tomasi parameters
 feature_params = dict(maxCorners = 5000, 
                       qualityLevel = 0.03, 
-                      minDistance = 40, 
-                      blockSize = 20
+                      minDistance = 20, 
+                      blockSize = 15
                       )
 
 # Lucas-Kanade parameters

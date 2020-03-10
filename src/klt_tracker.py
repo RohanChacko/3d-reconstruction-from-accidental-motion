@@ -60,7 +60,7 @@ class KLT_Tracker:
         plt.imshow(image)
         plt.show()
     
-    def homography_filter(self, threshold = 0.9):
+    def homography_filter(self, threshold = 0.95):
         '''
         Function to remove outliers points from optical flow
         '''
@@ -100,7 +100,7 @@ class KLT_Tracker:
 
     def generate_initial_point_cloud(self, point_cloud_path):
         reference_features = self.reference_features.reshape(self.reference_features.shape[0], 2).astype('uint32')
-        reference_features_textures = (self.reference_image[reference_features[:,1], reference_features[:,0], :] / 255.0).astype('float64')
+        reference_features_textures = (self.reference_image[reference_features[:,1], reference_features[:,0], :] ).astype('float64')
 
 
         # no_of_cams = len(self.optical_flow[0])
@@ -117,7 +117,7 @@ class KLT_Tracker:
         # reference_features = image_pts[0, :, :].astype('uint16') 
         # reference_features_textures = (self.reference_image[reference_features[:,0], reference_features[:,1], :]).astype('uint32')
         reference_features_points = np.concatenate((reference_features, np.zeros((reference_features.shape[0], 1))), axis =1)
-        print(reference_features)
+        # print(reference_features)
         # point_map = np.zeros((0,3))
         # color_map = np.zeros((0,3))
         # print(self.reference_image.shape)
@@ -150,9 +150,9 @@ class KLT_Tracker:
         points3D[0, :] = points3D[0,:] - w / 2
         points3D[1, :] = h / 2 - points3D[1,:] 
         # points3D[:2, :] = points3D[:2, :] / config.CAMERA_PARAMS['fx']
-        points3D[2,:] = points3D[2,:] * 700 #config.CAMERA_PARAMS['fx'] / depthVector
+        # points3D[2,:] = points3D[2,:] * 700 #config.CAMERA_PARAMS['fx'] / depthVector
 
-        # points3D[2,:] = points3D[2,:] * config.CAMERA_PARAMS['fx'] / depthVector
+        points3D[2,:] = points3D[2,:] * config.CAMERA_PARAMS['fx'] / depthVector
         points3D = points3D.T
         # reference_features_points = np.concatenate((reference_features, np.random.uniform(2, 4, (reference_features.shape[0], 1))), axis =1)
         # print(points3D, 'points3D')
