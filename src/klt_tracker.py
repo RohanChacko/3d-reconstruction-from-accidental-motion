@@ -147,7 +147,7 @@ class KLT_Tracker:
         cam_params = config.CAMERA_PARAMS
         h = cam_params['cy'] * 2
         w = cam_params['cx'] * 2
-        points3D[0, :] = points3D[0,:] - w / 2
+        points3D[0, :] = w / 2 - points3D[0,:] 
         points3D[1, :] = h / 2 - points3D[1,:] 
         # points3D[:2, :] = points3D[:2, :] / config.CAMERA_PARAMS['fx']
         # points3D[2,:] = points3D[2,:] * 700 #config.CAMERA_PARAMS['fx'] / depthVector
@@ -161,7 +161,7 @@ class KLT_Tracker:
 
         # Scale the points correctly
         # write_point_cloud(point_cloud_path, reference_features_points, reference_features_textures)
-        write_point_cloud(point_cloud_path, points3D, reference_features_textures)
+        # write_point_cloud(point_cloud_path, points3D, reference_features_textures)
         # write_point_cloud(point_cloud_path, point_map, color_map)
 
     def generate_bundle_file(self, bundle_file_path):
@@ -196,7 +196,7 @@ class KLT_Tracker:
             for cam in range(num_of_cam):
                 # print(pt, cam)
                 # print(self.optical_flow[pt][cam])
-                contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0]- config.CAMERA_PARAMS['cx'], config.CAMERA_PARAMS['cy'] - self.optical_flow[pt][cam][1])
+                contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, config.CAMERA_PARAMS['cx'] - self.optical_flow[pt][cam][0], config.CAMERA_PARAMS['cy'] - self.optical_flow[pt][cam][1])
 
                 # contentLine = '%d %d %d %d ' % (cam, pt*num_of_cam + cam, self.optical_flow[pt][cam][0], self.optical_flow[pt][cam][1])
                 content = content + contentLine
