@@ -292,6 +292,8 @@ void BuildProblem(BALProblem* bal_problem, Problem* problem) {
 
     // If enabled use Huber's loss function.
     LossFunction* loss_function = FLAGS_robustify ? new HuberLoss(1.0) : NULL;
+    // LossFunction* loss_function = NULL;
+
 
     // Each observation correponds to a pair of a camera and a point
     // which are identified by camera_index()[i] and point_index()[i]
@@ -343,8 +345,8 @@ void SolveProblem(const char* filename) {
   BuildProblem(&bal_problem, &problem);
   Solver::Options options;
   SetSolverOptionsFromFlags(&bal_problem, &options);
-  options.gradient_tolerance = 1e-6;
-  options.function_tolerance = 1e-6;
+  options.gradient_tolerance = 1e-10;
+  options.function_tolerance = 1e-10;
   Solver::Summary summary;
   Solve(options, &problem, &summary);
   std::cout << summary.FullReport() << "\n";

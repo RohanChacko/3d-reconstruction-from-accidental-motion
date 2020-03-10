@@ -68,7 +68,7 @@ struct AccidentalMotionError {
     // camera[6] is the focal length of the camera
     // const T& focal = camera[6];
     // focal length is set to be constant for now
-    const T& focal = T(2720.0);
+    const T& focal = T(1781.0);
 
     // Compute point location
     T p[3] = { 
@@ -76,6 +76,7 @@ struct AccidentalMotionError {
       point[1] / point[2], 
       T(1) / point[2] 
     };
+    // cout<<focal;
 
     T image_x = T(observed_x) / focal;
     T image_y = T(observed_y) / focal;
