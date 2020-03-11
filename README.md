@@ -9,8 +9,9 @@
 #### Dataset Location
 - Download the dataset from [here](https://umich.box.com/shared/static/bnqgx0an4v1b0ioq80sejb7rfiuku8iy.zip) and store it in ./datasets
 
-#### To Do's
+#### TODO
 - [x] KLT
 - [x] Filtering Good Points 
-- [ ] Bundle Adjustment
+- [x] Bundle Adjustment
+- [ ] Plane Sweeping
 - [ ] CRF Smoothening
