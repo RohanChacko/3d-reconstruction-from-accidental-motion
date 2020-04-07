@@ -7,7 +7,8 @@
 - `make -j4`
 
 #### Building DenseCRF package
-- `chmod +x pydensecrf_setup.sh`
+- `cd src`
+- `chmod +x src/pydensecrf_setup.sh`
 - `./pydensecrf_setup.sh`
 
 #### Dataset Location
