@@ -2,7 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 from glob import glob
 from klt_tracker import KLT_Tracker
-from dense_crf import DenseCRF
+#from dense_crf import DenseCRF
 from bundle_adjuster import BundleAdjuster
 import config
 from utilities import * 

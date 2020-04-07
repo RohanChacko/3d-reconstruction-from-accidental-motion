@@ -28,7 +28,12 @@ class KLT_Tracker:
 
         optical_flow = self.optical_flow
         reference_features = self.reference_features
-        for current_image in self.images:
+        for idx, current_image in enumerate(self.images):
+
+            #if (idx+1) % 15 == 0 :
+            #    reference_features = cv2.goodFeaturesToTrack(gray(self.reference_image), mask = None, **self.feature_params)
+            #    optical_flow = [[(i.ravel()[0], i.ravel()[1])] for i in reference_features]
+
             current_features, status, error = cv2.calcOpticalFlowPyrLK(gray(self.reference_image), 
                                                                        gray(current_image), 
                                                                        reference_features, 
@@ -57,6 +62,7 @@ class KLT_Tracker:
             feature = np.array(feature, np.int32).reshape((-1,1,2))
             cv2.polylines(mask, [feature], False, (255,0,0))
         image = cv2.add(image, mask)
+        plt.imsave('bet.jpg', image)
         plt.imshow(image)
         plt.show()
     
