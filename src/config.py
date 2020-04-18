@@ -1,7 +1,7 @@
 import cv2
 
 # Image Directory
-IMAGE_DIR = '../datasets/stone6_still'
+IMAGE_DIR = '../datasets/0035_still'
 
 # Initial Point Cloud 
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -33,11 +33,13 @@ CERES_PARAMS = dict(
                     nonmonotonic_steps = 'false'
                     )
 
-CAMERA_PARAMS = dict(fx=1781,
-                     fy=1781,
+CAMERA_PARAMS = dict(fx=2720.0,
+                     fy=2720.0,
                      cx=960,
                      cy=540,
                      k1=0,
                      k2=0,
                      s=0,
                     )
+
+2720.0

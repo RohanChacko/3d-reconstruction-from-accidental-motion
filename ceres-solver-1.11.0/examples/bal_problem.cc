@@ -144,6 +144,7 @@ BALProblem::BALProblem(const std::string& filename, bool use_quaternions) {
 // is read by the constructor.
 void BALProblem::WriteToFile(const std::string& filename) const {
   FILE* fptr = fopen(filename.c_str(), "w");
+  FILE* fptr2 = fopen("extrinsics.txt", "w");
 
   if (fptr == NULL) {
     LOG(FATAL) << "Error: unable to open file " << filename;
@@ -171,7 +172,10 @@ void BALProblem::WriteToFile(const std::string& filename) const {
     }
     for (int j = 0; j < 9; ++j) {
       fprintf(fptr, "%.16g\n", angleaxis[j]);
+      fprintf(fptr2, "%.16g, ", angleaxis[j]);
     }
+    fprintf(fptr2, "\n");
+
   }
 
   const double* points = parameters_ + camera_block_size() * num_cameras_;
