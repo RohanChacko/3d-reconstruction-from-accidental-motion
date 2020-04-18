@@ -10,6 +10,7 @@
 - `cd src`
 - `chmod +x src/pydensecrf_setup.sh`
 - `./pydensecrf_setup.sh`
+**Note**: Make sure `Cython` is installed before running the above commands.
 
 #### Dataset Location
 - Download the dataset from [here](https://umich.box.com/shared/static/bnqgx0an4v1b0ioq80sejb7rfiuku8iy.zip) and store it in ./datasets
