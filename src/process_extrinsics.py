@@ -27,9 +27,10 @@ def params_to_transfomation_mtx(params):
             [0, focal_length, 0],
             [0,            0, 1],
         ])
-
-        projection_matrix = K @ transformation_matrix[0:3,:]
-
+        # print(transformation_matrix[0:3,:])
+        mat = transformation_matrix[:3, :]
+        projection_matrix = K @ mat
+        
         transformations.append(transformation_matrix)
         projections.append(projection_matrix)
     
