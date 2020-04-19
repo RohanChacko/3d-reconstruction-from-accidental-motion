@@ -5,6 +5,18 @@
 - `cd ceres-bin`
 - `cmake ../ceres-solver-1.11.0/`
 - `make -j4`
+or 
+- `bash recompile.sh`
+
+#### Install dependencies and requirements
+- `pip install -r requirements.txt`
+
+#### Running the pipeline
+- `cd src`
+- `python main.py`
+
+#### Outputs 
+- `cd outputs`
 
 #### Building DenseCRF package
 - `cd src`
