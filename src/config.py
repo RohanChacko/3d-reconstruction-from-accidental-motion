@@ -4,7 +4,7 @@ import cv2
 IMAGE_DIR = '../datasets/stone6_still'
 
 # Extrinsics File
-EXTRINSIC_FILE = './extrinsics.txt'
+EXTRINSIC_FILE = '../output/extrinsics.csv'
 
 # Initial Point Cloud 
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -14,6 +14,12 @@ FINAL_POINT_CLOUD = '../output/final_point_cloud.ply'
 
 # Bundle File
 BUNDLE_FILE = '../output/bundle.out'
+
+# Optical Flow Plot 
+OPTICAL_FLOW_PLOT = '../output/optical_flow.png'
+
+# Sparse Depth Map
+SPARSE_DEPTH_MAP = '../output/sparse_depth_map.png'
 
 # Shi-Tomasi parameters
 feature_params = dict(maxCorners = 2000, 

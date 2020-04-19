@@ -62,9 +62,7 @@ class KLT_Tracker:
             feature = np.array(feature, np.int32).reshape((-1,1,2))
             cv2.polylines(mask, [feature], False, (255,0,0))
         image = cv2.add(image, mask)
-        plt.imsave('bet.jpg', image)
-        plt.imshow(image)
-        plt.show()
+        plt.imsave(config.OPTICAL_FLOW_PLOT, image)
     
     def homography_filter(self, threshold = 0.95):
         '''

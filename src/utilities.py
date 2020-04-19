@@ -174,31 +174,14 @@ def point_cloud_2_depth_map(pcd):
     transformations = get_transformations(config.EXTRINSIC_FILE)
     
     K = construct_camera_matrix(camera_params)
-    # K = np.array([[   camera_params['fx'],                    0,    0],
-    #               [                     0,  camera_params['fx'],    0],
-    #               [                     0,                    0,                      1]])
-    
-    # K = np.array([[   1,                    0,    camera_params['cx'] ],
-    #               [                     0,  1,    camera_params['cy']],
-    #               [                     0,                    0,                      1]])
-    
-    # print(points_3D)
+
     points_3D = np.vstack((points_3D, np.ones((1, points_3D.shape[1]))))
-    # print(transformations[0])
-    # image_coordinates = K @ points_3D
-    # print(transformations[0] @ points_3D)
+
     image_coordinates = K @ (transformations[0][:3,:] @ points_3D)
-    # print(image_coordinates)
+
     image_coordinates = np.int0(image_coordinates / image_coordinates[2, :])
-    # print(image_coordinates)
-    # pixel_depth_val = ((points_3D[2, :] - min_depth) * 255 / (max_depth - min_depth))
 
     pixel_depth_val = 255 - ((points_3D[2, :] - min_depth) * 255 / (max_depth - min_depth))
-
-    # print(np.max(image_coordinates))
-    # print(np.min(image_coordinates))
-    # print(pixel_depth_val)
-    print(image_coordinates.shape[1])
  
     depth_image = np.zeros((camera_params['cy'] * 2, camera_params['cx'] * 2))
 
@@ -210,9 +193,11 @@ def point_cloud_2_depth_map(pcd):
         if image_coordinates[1, i] < depth_image.shape[0] and image_coordinates[0, i] < depth_image.shape[1] and image_coordinates[0, i] >= 0 and image_coordinates[1, i] >= 0:
             depth_image[height_image - image_coordinates[1, i], width_image - image_coordinates[0, i]] = pixel_depth_val[i]
             point_in_view +=1
-    print(point_in_view)
-    plt.imshow(depth_image, 'gray')
-    plt.show()
+
+    plt.imsave(config.SPARSE_DEPTH_MAP, depth_image, cmap='gray')
+
+    return depth_image
+
 
 
 def custom_draw_geometry(pcd):

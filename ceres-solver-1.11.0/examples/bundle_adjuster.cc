@@ -353,7 +353,7 @@ void SolveProblem(const char* filename) {
 
   if (!FLAGS_final_ply.empty()) {
     bal_problem.WriteToPLYFile(FLAGS_final_ply);
-    bal_problem.WriteToFile("Final_Bundle.txt");
+    bal_problem.WriteToFile("../output/Final_Bundle.txt");
   }
 }
 
