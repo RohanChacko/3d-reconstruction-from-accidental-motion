@@ -54,3 +54,9 @@ if __name__ == '__main__':
                                      config.CERES_PARAMS)
 
     bundle_adjuster.bundle_adjust()
+
+    # Read the point cloud generated after Bundle Adjustment
+    pcd = o3d.io.read_point_cloud(config.FINAL_POINT_CLOUD)
+
+    # Extract depth from the point cloud
+    depth_map = point_cloud_2_depth_map(pcd)

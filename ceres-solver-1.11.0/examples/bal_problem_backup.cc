@@ -136,6 +136,7 @@ BALProblem::BALProblem(const std::string& filename, bool use_quaternions) {
 // is read by the constructor.
 void BALProblem::WriteToFile(const std::string& filename) const {
   FILE* fptr = fopen(filename.c_str(), "w");
+  FILE* fptr2 = fopen("sucks.txt", "w");
 
   if (fptr == NULL) {
     LOG(FATAL) << "Error: unable to open file " << filename;
@@ -152,6 +153,7 @@ void BALProblem::WriteToFile(const std::string& filename) const {
     fprintf(fptr, "\n");
   }
 
+  fprintf(fptr2,"This guy\n");
   for (int i = 0; i < num_cameras(); ++i) {
     double angleaxis[9];
     if (use_quaternions_) {
@@ -163,8 +165,13 @@ void BALProblem::WriteToFile(const std::string& filename) const {
     }
     for (int j = 0; j < 9; ++j) {
       fprintf(fptr, "%.16g\n", angleaxis[j]);
+      if(i==1) {
+        fprintf(fptr2,"%.16g\t",angle_axis[j]);
+      }
+      fprintf(fptr2,"\n");
     }
   }
+  fprintf(fptr2,"Fucks");
 
   const double* points = parameters_ + camera_block_size() * num_cameras_;
   for (int i = 0; i < num_points(); ++i) {

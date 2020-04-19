@@ -144,6 +144,7 @@ BALProblem::BALProblem(const std::string& filename, bool use_quaternions) {
 // is read by the constructor.
 void BALProblem::WriteToFile(const std::string& filename) const {
   FILE* fptr = fopen(filename.c_str(), "w");
+  FILE* fptr2 = fopen("../output/extrinsics.csv", "w");
 
   if (fptr == NULL) {
     LOG(FATAL) << "Error: unable to open file " << filename;
@@ -171,7 +172,10 @@ void BALProblem::WriteToFile(const std::string& filename) const {
     }
     for (int j = 0; j < 9; ++j) {
       fprintf(fptr, "%.16g\n", angleaxis[j]);
+      fprintf(fptr2, "%.16g, ", angleaxis[j]);
     }
+    fprintf(fptr2, "\n");
+
   }
 
   const double* points = parameters_ + camera_block_size() * num_cameras_;
@@ -209,6 +213,9 @@ void BALProblem::WriteToPLYFile(const std::string& filename) const {
     of << center[0] << ' ' << center[1] << ' ' << center[2]
        << " 0 255 0" << '\n';
   }
+
+  of << "0" << ' ' << "0" << ' ' << "0"
+       << " 255 0 0" << '\n';
 
   // Export the structure (i.e. 3D Points) as white points.
   const double* points = parameters_ + camera_block_size() * num_cameras_;
