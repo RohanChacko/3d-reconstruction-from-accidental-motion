@@ -331,7 +331,6 @@ void SolveProblem(const char* filename) {
   BALProblem bal_problem(filename, FLAGS_use_quaternions);
   
   if (!FLAGS_initial_ply.empty()) {
-    std::cout<<"In here\n";
     bal_problem.WriteToPLYFile(FLAGS_initial_ply);
   }
 
@@ -354,8 +353,7 @@ void SolveProblem(const char* filename) {
 
   if (!FLAGS_final_ply.empty()) {
     bal_problem.WriteToPLYFile(FLAGS_final_ply);
-    std::cout<<"fuck me";
-    bal_problem.WriteToFile("Outputlel.txt");
+    bal_problem.WriteToFile("Final_Bundle.txt");
   }
 }
 
