@@ -212,7 +212,14 @@ void BALProblem::WriteToPLYFile(const std::string& filename) const {
     CameraToAngleAxisAndCenter(camera, angle_axis, center);
     of << center[0] << ' ' << center[1] << ' ' << center[2]
        << " 0 255 0" << '\n';
+    if(i==0)
+    {
+      printf("%.16g, %.16g, %.16g, \n",center[0],center[1],center[2]);
+    }
   }
+
+  of << "0" << ' ' << "0" << ' ' << "0"
+       << " 255 0 0" << '\n';
 
   // Export the structure (i.e. 3D Points) as white points.
   const double* points = parameters_ + camera_block_size() * num_cameras_;
