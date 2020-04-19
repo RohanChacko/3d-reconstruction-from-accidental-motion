@@ -4,10 +4,30 @@ import open3d as o3d
 import copy  
 
 def read_extrinsics_params(file):
+    '''
+    Function that reads a Camera Extrinsics file with Rodrigous parameters
+    and outputs the parameters in a numpy array
+
+    Input:
+        file - File name
+
+    Return:
+        params - N*9 array of parameters
+    '''
     data = np.genfromtxt(file, delimiter=',')
-    return np.delete(data, -1, 1)
+    data = np.delete(data, -1, 1)
+    return data
 
 def params_to_transfomation_mtx(params):
+    '''
+    Function that takes in the input Rodrigous parameters and 
+    outputs a rotation matrix
+
+    Input:
+        params - Rodrigous parameters
+    Return:
+        transformation - N * 4*4 transfomation matrices
+    '''
     transformations = []
     projections = []
     for i in range(len(params)):
