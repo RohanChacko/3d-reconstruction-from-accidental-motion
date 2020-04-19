@@ -8,7 +8,12 @@ import os
 def Sad(img1, img2) :
 
     # img1, img2 are patches from two different images
-    return np.sum(np.abs(img1 - img2))
+
+    # for r in range(img1.shape[0]) :
+    #     for c in range(img1.shape[1]):
+    err = np.sum(np.abs(img1 - img2[:img1.shape[0], :img1.shape[1]]))
+
+    return err
 
 
 def HomographyFrom(K, C1, R1, C2, R2, dep):
