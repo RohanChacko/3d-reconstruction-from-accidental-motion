@@ -21,7 +21,7 @@ def read_extrinsics_params(file):
 def params_to_transfomation_mtx(params):
     '''
     Function that takes in the input Rodrigous parameters and 
-    outputs a rotation matrix
+    outputs a transformation matrix
 
     Input:
         params - Rodrigous parameters
@@ -29,6 +29,34 @@ def params_to_transfomation_mtx(params):
         transformation - N * 4*4 transfomation matrices
     '''
     transformations = []
+    for i in range(len(params)):
+        param = params[i]
+        rodrigous_rot = param[0:3]
+        translation = param[3:6]
+        focal_length = param[6:7]
+        distortion_coeff = param[7:9]
+
+        rotation_matrix, _ = cv2.Rodrigues(rodrigous_rot)
+        transformation_matrix = np.eye(4)
+        transformation_matrix[0:3, 0:3] = rotation_matrix
+        transformation_matrix[0:3, 3] = translation
+        
+        transformations.append(transformation_matrix)
+    
+    transformations = np.array(transformations)
+
+    return transformations
+
+def params_to_projection_mtx(params):
+    '''
+    Function that takes in the input Rodrigous parameters and 
+    outputs a projection matrix
+
+    Input:
+        params - Rodrigous parameters
+    Return:
+        projections - N * 3*4 projection matrices
+    '''
     projections = []
     for i in range(len(params)):
         param = params[i]
@@ -42,23 +70,17 @@ def params_to_transfomation_mtx(params):
         transformation_matrix[0:3, 0:3] = rotation_matrix
         transformation_matrix[0:3, 3] = translation
 
-        K = np.array([
-            [focal_length, 0, 0],
-            [0, focal_length, 0],
-            [0,            0, 1],
-        ])
-        # print(transformation_matrix[0:3,:])
+        K = construct_camera_matrix(camera_params)
+
         mat = transformation_matrix[:3, :]
         projection_matrix = K @ mat
         
-        transformations.append(transformation_matrix)
         projections.append(projection_matrix)
     
-    transformations = np.array(transformations)
     projections = np.array(projections)
 
-    return transformations, projections
-
+    return projections
+    
 if __name__ == '__main__':
     params = read_extrinsics_params('./extrinsics.txt')
     transformations, projections = params_to_transfomation_mtx(params)
