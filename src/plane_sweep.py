@@ -5,19 +5,18 @@ import utilities
 import csv
 import os
 
-def Sad(img1, img2) :
-
-    # img1, img2 are patches from two different images
+def Sad(warp_patch, ref_patch) :
 
     # for r in range(img1.shape[0]) :
     #     for c in range(img1.shape[1]):
-    err = np.sum(np.abs(img1 - img2[:img1.shape[0], :img1.shape[1]]))
+    err = np.sum(np.abs(warp_patch - ref_patch[:warp_patch.shape[0], :warp_patch.shape[1]]))
 
     return err
 
 
 def HomographyFrom(K, C1, R1, C2, R2, dep):
-    # C1, R2 : Reference Image
+
+    # C1, R1 : Reference Image
 
     H  = dep * K @ R2 @ R1.T @ np.linalg.inv(K)
     H[:,2] += K @ R2 @ (C1 - C2)
@@ -31,9 +30,17 @@ def MergeScores(scores):
     valid_ratio = 0.5
     num_valid_scores = int(len(scores) * valid_ratio)
 
+    # idx = np.argpartition(scores, num_valid_scores)
+    # scoree = np.array(scores)
+    # scor = np.sum(scoree[idx[:num_valid_scores]])
+
     scores = sorted(scores)
     for i in range(num_valid_scores):
         score += scores[i]
+        # print(scores[i],scoree[idx[i]])
+
+    # if scor != score:
+    #     print(scor,score)
 
     return score/num_valid_scores
 
@@ -103,7 +110,7 @@ def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radiu
 
     # Get all images
     all_img = []
-    for file in os.listdir(config.IMAGE_DIR) :
+    for file in sorted(os.listdir(config.IMAGE_DIR)) :
 
         if file.endswith('.png') :
             im = cv2.imread(os.path.join(config.IMAGE_DIR, file))
@@ -156,18 +163,18 @@ def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radiu
             warped_images.append(warp)
 
         # len(scores) == len(warped_images)
-        for x in range(width - patch_radius):
-            for y in range(height - patch_radius):
-                p2 = ref_img[y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
+        for x in range(patch_radius, width - patch_radius):
+            for y in range(patch_radius, height - patch_radius):
+                ref_patch = ref_img[y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
                 scores = []
                 for i in range(len(warped_images)):
-                    p1 = warped_images[i][y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
-                    s = Sad(p1, p2)
+                    warp_patch = warped_images[i][y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
+                    s = Sad(warp_patch, ref_patch)
                     # print(s)
                     scores.append(s)
 
                 cost_volume_arr[idx, y, x] = MergeScores(scores)
 
-    np.save('cost_volume_64_2',cost_volume_arr)
+    np.save(f'cost_volume_{num_samples}_1',cost_volume_arr)
     print("Finished computing unary")
     return cost_volume_arr
