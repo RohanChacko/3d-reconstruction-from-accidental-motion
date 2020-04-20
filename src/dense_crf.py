@@ -76,6 +76,8 @@ def dense_depth(folder, num_samples, pc_score = None) :
 	min_depth = config.PS_PARAMS['min_depth']
 	patch_radius = config.PS_PARAMS['patch_radius']
 
+	if pc_score is not None :
+		num_samples = pc_score.shape[0]
 
 	# Create depth samples in the specified depth range
 	depth_samples = np.zeros(num_samples)
@@ -86,31 +88,31 @@ def dense_depth(folder, num_samples, pc_score = None) :
 		# Can use fx = 1781.0
 		depth_samples[val] = config.CAMERA_PARAMS['fx']/sample
 
+	# Get reference image
+	file = sorted(os.listdir(config.IMAGE_DIR.format(folder)))[0]
+	ref_img = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
+	ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2RGB)
+	for s in range(scale):
+		ref_img = cv2.pyrDown(ref_img)
+
 	if pc_score is None :
 		# Perform plane sweep to calculate photo-consistency loss
 
 		# TODO: Change naming convention
 		outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}'
-		ref_image, pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
+		pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
 		print("Finished computing unary...")
 
-	else :
-		file = sorted(os.listdir(config.IMAGE_DIR.format(folder)))[0]
-		ref_img = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
-		ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2RGB)
-		for s in range(scale):
-			ref_img = cv2.pyrDown(ref_img)
-
-	outfile = 'depth_map.png'
+	outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}_depth_map.png'
 	# Use photoconsistency score as unary potential
 	depth_map = DenseCRF(pc_score, ref_img, depth_samples, config.CRF_PARAMS, outfile)
 	print("Finished solving CRF...")
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--folder", help='Folder in dataset dir', default='stone6', required=True)
+parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
 parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
 args = parser.parse_args()
 
-# pc = np.load('cost_volume_16_5.npy')
+# pc = np.load('stone6_cost_volume_16_5.npy')
 dense_depth(args.folder, int(args.nsamples))
