@@ -1,26 +1,21 @@
-import cv2
 import numpy as np
-import config
 import utilities
+import config
 import csv
+import cv2
 import os
 
 def Sad(warp_patch, ref_patch) :
 
-    # for r in range(img1.shape[0]) :
-    #     for c in range(img1.shape[1]):
     err = np.sum(np.abs(warp_patch - ref_patch[:warp_patch.shape[0], :warp_patch.shape[1]]))
-
     return err
 
 
 def HomographyFrom(K, C1, R1, C2, R2, dep):
 
     # C1, R1 : Reference Image
-
     H  = dep * K @ R2 @ R1.T @ np.linalg.inv(K)
     H[:,2] += K @ R2 @ (C1 - C2)
-
     return H
 
 
@@ -71,6 +66,7 @@ def GetMin(values, size):
 
 
 def Modulate(cost_volume_arr):
+
     first = 0
     second = 0
     confidence = 0
@@ -86,16 +82,17 @@ def Modulate(cost_volume_arr):
 
     return cost_volume_arr
 
-def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radius = 1):
+def plane_sweep(folder, depth_samples, min_depth, max_depth, scale, patch_radius):
 
-    print("Number of samples: ",{num_samples})
+    print(f"Number of depth samples: {depth_samples.shape[0]}")
+
     # Intrinsics, Camera centers, Rotation mtx
     K = utilities.construct_camera_matrix(config.CAMERA_PARAMS)
     C = []
     R = []
 
     # Get extrinsics
-    with open(config.EXTRINSIC_FILE) as ext_file:
+    with open(config.EXTRINSIC_FILE.format(folder)) as ext_file:
         csv_reader = csv.reader(ext_file, delimiter=',')
 
         for row in csv_reader:
@@ -110,20 +107,11 @@ def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radiu
 
     # Get all images
     all_img = []
-    for file in sorted(os.listdir(config.IMAGE_DIR)) :
+    for file in sorted(os.listdir(config.IMAGE_DIR.format(folder))) :
 
         if file.endswith('.png') :
-            im = cv2.imread(os.path.join(config.IMAGE_DIR, file))
+            im = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
             all_img.append(im)
-
-
-    # inverse perspetive/depth sampling
-    depth_samples = []
-    step = 1.0 / (num_samples - 1.0)
-    for val in range(num_samples):
-        sample = (max_depth * min_depth) / (max_depth - (max_depth - min_depth) * val * step)
-        depth_samples.append(1781.0/sample)
-
 
     scaled_gray_images = []
     for img in all_img :
@@ -139,11 +127,11 @@ def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radiu
     height, width = ref_img.shape
 
     num_images = len(all_img)
-    cost_volume_arr = np.zeros((num_samples, height, width))
+    cost_volume_arr = np.zeros((depth_samples.shape[0], height, width))
 
     for idx, depth in enumerate(depth_samples):
 
-        print(f"Sample...{idx+1}")
+        print(f"Depth sample...{idx+1}")
         homographies = np.zeros((num_images, 3, 3))
         warped_images = []
 
@@ -158,11 +146,8 @@ def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radiu
         # Assume 0th image is reference image
         for i in range(1, num_images):
             warp = cv2.warpPerspective(scaled_gray_images[i], homographies[i], ref_img.shape[::-1], cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
-            cv2.imwrite('ref.png', ref_img)
-            cv2.imwrite(f'warp_{i}.png', warp)
             warped_images.append(warp)
 
-        # len(scores) == len(warped_images)
         for x in range(patch_radius, width - patch_radius):
             for y in range(patch_radius, height - patch_radius):
                 ref_patch = ref_img[y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
@@ -170,11 +155,15 @@ def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=16, patch_radiu
                 for i in range(len(warped_images)):
                     warp_patch = warped_images[i][y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
                     s = Sad(warp_patch, ref_patch)
-                    # print(s)
                     scores.append(s)
 
                 cost_volume_arr[idx, y, x] = MergeScores(scores)
 
-    np.save(f'cost_volume_{num_samples}_1',cost_volume_arr)
-    print("Finished computing unary")
-    return cost_volume_arr
+    cost_volume_arr = Modulate(cost_volume_arr)
+    np.save(f'{folder}_cost_volume_{depth_samples.shape[0]}_1', cost_volume_arr)
+
+    ref_rgb = cv2.cvtColor(all_img[0], cv2.COLOR_BGR2Lab)
+    for s in range(scale):
+        ref_rgb = cv2.pyrDown(ref_rgb)
+
+    return ref_rgb, cost_volume_arr.astype('float32')

@@ -1,10 +1,10 @@
 import cv2
 
 # Image Directory
-IMAGE_DIR = '../datasets/stone6_still'
+IMAGE_DIR = '../datasets/{}_still'
 
 # Extrinsics File
-EXTRINSIC_FILE = '../output/stone6/extrinsics.csv'
+EXTRINSIC_FILE = '../output/{}/extrinsics.csv'
 
 # Initial Point Cloud
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -50,5 +50,15 @@ CAMERA_PARAMS = dict(fx=1781.0,
                      k2=0,
                      s=0,
                     )
+PS_PARAMS = dict(max_depth=4.0,
+                min_depth=2.0,
+                scale=2,
+                num_samples=16,
+                patch_radius=1)
 
-2720.0
+CRF_PARAMS = dict(iters=100,
+                pos_std=(3, 3),
+                rgb_std=(20, 20, 20),
+                weight=1,
+                max_penalty=0.15
+                )
