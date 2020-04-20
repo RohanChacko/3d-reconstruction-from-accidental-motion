@@ -86,9 +86,10 @@ def dense_depth(folder, pc_score = None) :
 		# Can use fx = 1781.0
 		depth_samples[val] = sample
 
-	if pc is None :
+	if pc_score is None :
 		# Perform plane sweep to calculate photo-consistency loss
-		ref_image, pc_score = plane_sweep(folder, depth_samples, min_depth, max_depth, scale, patch_radius)
+		outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}_1'
+		ref_image, pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
 		print("Finished computing unary...")
 
 	else :
@@ -105,4 +106,4 @@ def dense_depth(folder, pc_score = None) :
 
 
 pc = np.load('cost_volume_16_5.npy')
-dense_depth('stone6', pc)
+dense_depth('stone6')

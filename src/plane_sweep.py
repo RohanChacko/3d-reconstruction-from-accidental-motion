@@ -82,7 +82,7 @@ def Modulate(cost_volume_arr):
 
     return cost_volume_arr
 
-def plane_sweep(folder, depth_samples, min_depth, max_depth, scale, patch_radius):
+def plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius):
 
     print(f"Number of depth samples: {depth_samples.shape[0]}")
 
@@ -160,7 +160,7 @@ def plane_sweep(folder, depth_samples, min_depth, max_depth, scale, patch_radius
                 cost_volume_arr[idx, y, x] = MergeScores(scores)
 
     cost_volume_arr = Modulate(cost_volume_arr)
-    np.save(f'{folder}_cost_volume_{depth_samples.shape[0]}_1', cost_volume_arr)
+    np.save(outfile, cost_volume_arr)
 
     ref_rgb = cv2.cvtColor(all_img[0], cv2.COLOR_BGR2Lab)
     for s in range(scale):
