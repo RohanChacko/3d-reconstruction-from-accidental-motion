@@ -23,7 +23,7 @@ def compute_unary_image(unary, depth_samples, outfile):
 
 	cv2.imwrite(outfile, gd_im)
 
-def DenseCRF(unary, img, depth_samples, params, folder, outfile='depth_map.png', show_wta=False):
+def DenseCRF(unary, img, depth_samples, params, folder, max_depth, min_depth, outfile='depth_map.png', show_wta=False):
 
 	labels = unary.shape[0]
 	iters = params['iters']
@@ -61,12 +61,22 @@ def DenseCRF(unary, img, depth_samples, params, folder, outfile='depth_map.png',
 	MAP = np.argmax(Q, axis=0).reshape((img.shape[:2]))
 	depth_map = np.zeros((MAP.shape[0], MAP.shape[1]))
 
+	step = 1.0 / (depth_samples.shape[0] - 1.0)
 	for i in range(MAP.shape[0]):
 		for j in range(MAP.shape[1]):
 
-			sample = depth_samples[MAP[i,j]]
-			sample = (((sample - depth_samples[-1]) * 255) / (depth_samples[0] - depth_samples[-1]) )
-			depth_map[i,j] = sample
+			depth_map[i,j] = config.CAMERA_PARAMS['fx'] / ((max_depth * min_depth) / (max_depth - (max_depth - min_depth) * MAP[i,j] * step))
+
+	min_val = np.min(depth_map)
+	max_val = np.max(depth_map)
+
+	for i in range(MAP.shape[0]):
+		for j in range(MAP.shape[1]):
+
+			depth_map[i,j] = ((depth_map[i,j] - min_val)/(max_val - min_val)) * 255.0
+	# for i in range(config.PS_PARAMS['scale']):
+	#
+	# 	depth_map = cv2.pyrUp(depth_map)
 
 	cv2.imwrite(outfile, depth_map)
 
@@ -129,7 +139,7 @@ def dense_depth(args) :
 
 	# Use photoconsistency score as unary potential
 	print("Applying Dense CRF to smoothen depth map...")
-	depth_map = DenseCRF(pc_score, ref_img, depth_samples, crf_params, folder, outfile, show_wta)
+	depth_map = DenseCRF(pc_score, ref_img, depth_samples, crf_params, folder, max_depth, min_depth, outfile, show_wta)
 	print("Finished solving CRF...")
 
 
