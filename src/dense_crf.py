@@ -74,10 +74,8 @@ def DenseCRF(unary, img, depth_samples, params, folder, max_depth, min_depth, ou
 		for j in range(MAP.shape[1]):
 
 			depth_map[i,j] = ((depth_map[i,j] - min_val)/(max_val - min_val)) * 255.0
-	# for i in range(config.PS_PARAMS['scale']):
-	#
-	# 	depth_map = cv2.pyrUp(depth_map)
-
+	
+	depth_map = cv2.resize(depth_map, (config.CAMERA_PARAMS['cx'] * 2,config.CAMERA_PARAMS['cy'] * 2), interpolation=cv2.INTER_LINEAR)
 	cv2.imwrite(outfile, depth_map)
 
 def dense_depth(args) :

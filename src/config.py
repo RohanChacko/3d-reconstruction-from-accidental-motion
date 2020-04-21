@@ -1,5 +1,5 @@
 import cv2
-# import open3d as o3d
+import open3d as o3d
 # Image Directory
 IMAGE_DIR = '../datasets/{}_still'
 # IMAGE_DIR = '../datasets/stone6_still'
