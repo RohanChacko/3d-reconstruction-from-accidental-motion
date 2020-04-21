@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 from glob import glob
+from open3d import o3d
 from klt_tracker import KLT_Tracker
 #from dense_crf import DenseCRF
 from bundle_adjuster import BundleAdjuster

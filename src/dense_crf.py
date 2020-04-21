@@ -68,6 +68,10 @@ def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png', show_un
 			sample = (((sample - depth_samples[-1]) * 255) / (depth_samples[0] - depth_samples[-1]) )
 			depth_map[i,j] = sample
 
+	for i in range(config.PS_PARAMS['scale']):
+
+		depth_map = cv2.pyrUp(depth_map)
+
 	cv2.imwrite(outfile, depth_map)
 
 def dense_depth(folder, num_samples, pc_path = None, show_unary=False) :

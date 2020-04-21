@@ -1,7 +1,8 @@
 import cv2
-
+import open3d as o3d
 # Image Directory
-IMAGE_DIR = '../datasets/{}_still'
+# IMAGE_DIR = '../datasets/{}_still'
+IMAGE_DIR = '../datasets/stone6_still'
 
 # Extrinsics File
 EXTRINSIC_FILE = '../output/{}/extrinsics.csv'
@@ -59,5 +60,5 @@ CRF_PARAMS = dict(iters=100,
                 pos_std=(3, 3),
                 rgb_std=(20, 20, 20),
                 weight=1,
-                max_penalty=0.15
+                max_penalty=0.25
                 )
