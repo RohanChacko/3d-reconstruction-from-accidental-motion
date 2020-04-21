@@ -4,7 +4,7 @@ import cv2
 IMAGE_DIR = '../datasets/{}_still'
 
 # Extrinsics File
-EXTRINSIC_FILE = '../output/{}/extrinsics.csv'
+EXTRINSIC_FILE = '../output/{}/extrinsics_50.csv'
 
 # Initial Point Cloud
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -59,5 +59,5 @@ CRF_PARAMS = dict(iters=100,
                 pos_std=(3, 3),
                 rgb_std=(20, 20, 20),
                 weight=1,
-                max_penalty=0.15
+                max_penalty=0.22
                 )

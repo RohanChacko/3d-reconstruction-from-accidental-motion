@@ -23,7 +23,7 @@ def compute_unary_image(unary, depth_samples, outfile):
 
 	cv2.imwrite(outfile, gd_im)
 
-def DenseCRF(unary, img, depth_samples, params, folder, outfile='depth_map.png', show_unary=False):
+def DenseCRF(unary, img, depth_samples, params, folder, outfile='depth_map.png', show_wta=False):
 
 	labels = unary.shape[0]
 	iters = params['iters']
@@ -33,8 +33,8 @@ def DenseCRF(unary, img, depth_samples, params, folder, outfile='depth_map.png',
 	max_penalty = params['max_penalty']
 
 	# Get initial crude depth map from photoconsistency
-	if show_unary :
-		compute_unary_image(unary, depth_samples, outfile=f'../output/{folder}/cost_volume_{depth_samples.shape[0]}_unary.png')
+	if show_wta :
+		compute_unary_image(unary, depth_samples, outfile=f'../output/{folder}/cost_volume_{depth_samples.shape[0]}_wta.png')
 
 	# Normalize values for each pixel location
 	for r in range(unary.shape[1]):
@@ -75,7 +75,7 @@ def dense_depth(args) :
 	folder = args.folder
 	num_samples = int(args.nsamples)
 	pc_path = args.pc_cost
-	show_unary = args.show_unary
+	show_wta = args.show_wta
 
 	scale = int(args.scale)
 	max_depth = float(args.max_d)
@@ -107,6 +107,9 @@ def dense_depth(args) :
 	ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2RGB)
 	for s in range(scale):
 		ref_img = cv2.pyrDown(ref_img)
+	# Mean shifting image
+	ref_img = cv2.pyrMeanShiftFiltering(ref_img, 20, 20, 1)
+	cv2.imwrite('meanshift.png', ref_img)
 
 	if pc_path is None :
 
@@ -123,10 +126,10 @@ def dense_depth(args) :
 	crf_params['rgb_std'] = tuple(float(x) for x in args.c_std.split(','))
 	crf_params['weight'] = float(args.wt)
 	crf_params['max_penalty'] = float(args.max_p)
-	print(crf_params)
+
 	# Use photoconsistency score as unary potential
 	print("Applying Dense CRF to smoothen depth map...")
-	depth_map = DenseCRF(pc_score, ref_img, depth_samples, crf_params, folder, outfile, show_unary)
+	depth_map = DenseCRF(pc_score, ref_img, depth_samples, crf_params, folder, outfile, show_wta)
 	print("Finished solving CRF...")
 
 
@@ -137,7 +140,7 @@ if __name__ == '__main__' :
 	parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
 	parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
 	parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
-	parser.add_argument("--show_unary", help='Save depth map with just unary (photoconsistency score) potentials', default=False)
+	parser.add_argument("--show_wta", help='Save WTA output from photoconsistency score', action='store_true')
 
 	# CRF Params
 	parser.add_argument("--iters", help='Number of iters for CRF inference', default=config.CRF_PARAMS['iters'])
