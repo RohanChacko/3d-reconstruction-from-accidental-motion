@@ -23,7 +23,7 @@ def compute_unary_image(unary, depth_samples, outfile):
 
 	cv2.imwrite(outfile, gd_im)
 
-def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png'):
+def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png', show_unary):
 
 	labels = unary.shape[0]
 	iters = params['iters']
@@ -33,7 +33,8 @@ def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png'):
 	max_penalty = params['max_penalty']
 
 	# Get initial crude depth map from photoconsistency
-	# compute_unary_image(unary, depth_samples, outfile=f'{folder}_cost_volume_{depth_samples.shape[0]}_unary.png')
+	if show_unary :
+		compute_unary_image(unary, depth_samples, outfile=f'{folder}_cost_volume_{depth_samples.shape[0]}_unary.png')
 
 	# Normalize values for each pixel location
 	for r in range(unary.shape[1]):
@@ -122,6 +123,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
 parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
 parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
+parser.add_argument("--show_unary", help='Save depth map with just unary (photoconsistency score) potentials', default=False)
 args = parser.parse_args()
 
-dense_depth(args.folder, int(args.nsamples), pc_path=args.pc_cost)
+dense_depth(args.folder, int(args.nsamples), pc_path=args.pc_cost, show_unary=args.show_unary)
