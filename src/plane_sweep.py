@@ -1,10 +1,12 @@
-from numpy.lib.stride_tricks import as_strided
-import numpy as np
-import utilities
-import config
-import csv
-import cv2
 import os
+import cv2
+import csv
+import config
+import utilities
+import numpy as np
+from tqdm import tqdm
+from numpy.lib.stride_tricks import as_strided
+
 
 def Sad(ref_patch, warp_patch) :
 
@@ -130,9 +132,8 @@ def plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, pat
     num_images = len(all_img)
     cost_volume_arr = np.zeros((depth_samples.shape[0], height, width))
 
-    for idx, depth in enumerate(depth_samples):
+    for idx, depth in enumerate(tqdm(depth_samples)):
 
-        print(f"Depth sample...{idx+1}")
         homographies = np.zeros((num_images, 3, 3))
         warped_images = []
 
