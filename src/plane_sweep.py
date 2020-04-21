@@ -6,10 +6,20 @@ import csv
 import cv2
 import os
 
-def Sad(warp_patch, ref_patch) :
+def Sad(ref_patch, warp_patch) :
+
+    '''
+    Calculates L1 Loss between two grayscale image patches
+    N : Total number of warp images
+    P : Total number of patches per image
+    w : Length of one side of patch
+
+    Dimension of patch ndarray : N x P x (w*w)
+    Returned array dim : N x P
+    '''
 
     # err = np.sum(np.abs(warp_patch - ref_patch[:warp_patch.shape[0], :warp_patch.shape[1]]))
-    err = np.sum(np.abs(warp_patch - ref_patch))
+    err = np.sum(np.abs(warp_patch - ref_patch), axis=2)
     return err
 
 
@@ -24,16 +34,22 @@ def HomographyFrom(K, C1, R1, C2, R2, dep):
 def MergeScores(scores, valid_ratio = 0.5):
     '''
     Takes the average of top k values in array. k == valid_scores.
+    N : Total number of warp images
+    P : Total number of patches per image
+
+    Dimension of scores array: N x P
+    Dimension of returned array: (N*valid_ratio) x P
     '''
 
-    score = 0
-    num_valid_scores = int(len(scores) * valid_ratio)
+    num_valid_scores = int(scores.shape[0] * valid_ratio)
 
-    idx = np.argpartition(scores, num_valid_scores)
-    scores = np.array(scores).astype('float64')
-    score = np.sum(scores[idx[:num_valid_scores]])
+    ix = np.argpartition(scores, num_valid_scores, axis=0)
+    ix = ix[:num_valid_scores,:]
 
-    return score/num_valid_scores
+    srt = np.take_along_axis(scores, ix, axis=0)
+    score = np.sum(srt, axis=0) / num_valid_scores
+
+    return score
 
 def GetMin(values, size):
     '''
@@ -134,21 +150,25 @@ def plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, pat
             warped_images.append(warp)
 
 
-        img1 = as_strided(ref_img, shape=(ref_img.shape[0] - 2, ref_img.shape[1] - 2, 3, 3), strides=ref_img.strides + ref_img.strides, writeable=False)
-        h, w, _, _ = img1.shape
-        img1 = img1.reshape((img1.shape[0]*img1.shape[1], 9))
-        lol = np.zeros((len(warped_images), img1.shape[0], img1.shape[1]))
+        ref_img_patches = as_strided(ref_img, shape=(ref_img.shape[0] - 2*patch_radius,
+                                    ref_img.shape[1] - 2*patch_radius, 2*patch_radius + 1, 2*patch_radius + 1),
+                                    strides=ref_img.strides + ref_img.strides, writeable=False)
+
+        h, w, _, _ = ref_img_patches.shape
+        patch_size = 2*patch_radius + 1
+        ref_img_patches = ref_img_patches.reshape((ref_img_patches.shape[0]*ref_img_patches.shape[1], patch_size**2))
+        warp_patches = np.zeros((len(warped_images), ref_img_patches.shape[0], ref_img_patches.shape[1]))
         for i in range(len(warped_images)):
-            x = as_strided(warped_images[i], shape=(warped_images[i].shape[0] - 2, warped_images[i].shape[1] - 2, 3, 3), strides=warped_images[i].strides + warped_images[i].strides, writeable=False)
-            x = x.reshape((x.shape[0]*x.shape[1], 9))
-            lol[i,:,:] = x
 
-        diff = np.sum(np.abs(lol - img1), axis=2)
-        ix = np.argpartition(diff,int(0.5*len(warped_images)), axis=0)
-        ix = ix[:int(0.5*len(warped_images)),:]
+            x = as_strided(warped_images[i], shape=(warped_images[i].shape[0] - 2*patch_radius,
+                            warped_images[i].shape[1] - 2*patch_radius, 2*patch_radius + 1, 2*patch_radius + 1),
+                            strides=warped_images[i].strides + warped_images[i].strides, writeable=False)
 
-        srt = np.take_along_axis(diff, ix, axis=0)
-        score = np.sum(srt, axis=0) / int(0.5*len(warped_images))
+            x = x.reshape((x.shape[0]*x.shape[1], patch_size**2))
+            warp_patches[i,:,:] = x
+
+        L1_diff = Sad(ref_img_patches, warp_patches)
+        score = MergeScores(L1_diff, valid_ratio = 0.5)
 
         # TODO : Border pixels take default value cost arr. Fix that
         cost_volume_arr[idx, patch_radius:height-patch_radius, patch_radius:width-patch_radius] = score.reshape((h,w))

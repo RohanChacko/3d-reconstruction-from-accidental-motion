@@ -33,7 +33,7 @@ def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png'):
 	max_penalty = params['max_penalty']
 
 	# Get initial crude depth map from photoconsistency
-	# compute_unary_image(unary, depth_samples, outfile='unary.png')
+	# compute_unary_image(unary, depth_samples, outfile=f'{folder}_cost_volume_{depth_samples.shape[0]}_unary.png')
 
 	# Normalize values for each pixel location
 	for r in range(unary.shape[1]):
@@ -69,14 +69,16 @@ def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png'):
 
 	cv2.imwrite(outfile, depth_map)
 
-def dense_depth(folder, num_samples, pc_score = None) :
+def dense_depth(folder, num_samples, pc_path = None) :
 
 	scale = config.PS_PARAMS['scale']
 	max_depth = config.PS_PARAMS['max_depth']
 	min_depth = config.PS_PARAMS['min_depth']
 	patch_radius = config.PS_PARAMS['patch_radius']
 
-	if pc_score is not None :
+	pc_score = 0
+	if pc_path is not None :
+		pc_score = np.load(pc_path)
 		num_samples = pc_score.shape[0]
 
 	# Create depth samples in the specified depth range
@@ -85,7 +87,6 @@ def dense_depth(folder, num_samples, pc_score = None) :
 
 	for val in range(num_samples):
 		sample = (max_depth * min_depth) / (max_depth - (max_depth - min_depth) * val * step)
-		# Can use fx = 1781.0
 		depth_samples[val] = config.CAMERA_PARAMS['fx']/sample
 		# depth_samples[val] = sample
 
@@ -101,17 +102,18 @@ def dense_depth(folder, num_samples, pc_score = None) :
 	for s in range(scale):
 		ref_img = cv2.pyrDown(ref_img)
 
-	if pc_score is None :
+	if pc_path is None :
 		# Perform plane sweep to calculate photo-consistency loss
 
 		# TODO: Change naming convention
 		outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}'
 		print("Calculating photoconsistency score...")
 		pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
-		print("Finished computing unary...")
+		print("Finished computing photoconsistency score...")
 
 	outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}_depth_map.png'
 	# Use photoconsistency score as unary potential
+	print("Applying Dense CRF to smoothen depth map")
 	depth_map = DenseCRF(pc_score, ref_img, depth_samples, config.CRF_PARAMS, outfile)
 	print("Finished solving CRF...")
 
@@ -119,7 +121,7 @@ def dense_depth(folder, num_samples, pc_score = None) :
 parser = argparse.ArgumentParser()
 parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
 parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
+parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
 args = parser.parse_args()
 
-# pc = np.load('stone6_cost_volume_16_5.npy')
-dense_depth(args.folder, int(args.nsamples))
+dense_depth(args.folder, int(args.nsamples), pc_path=args.pc_cost)
