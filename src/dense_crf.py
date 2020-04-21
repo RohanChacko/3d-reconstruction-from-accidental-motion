@@ -23,7 +23,7 @@ def compute_unary_image(unary, depth_samples, outfile):
 
 	cv2.imwrite(outfile, gd_im)
 
-def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png', show_unary):
+def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png', show_unary=False):
 
 	labels = unary.shape[0]
 	iters = params['iters']
