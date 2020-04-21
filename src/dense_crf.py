@@ -87,9 +87,15 @@ def dense_depth(folder, num_samples, pc_score = None) :
 		sample = (max_depth * min_depth) / (max_depth - (max_depth - min_depth) * val * step)
 		# Can use fx = 1781.0
 		depth_samples[val] = config.CAMERA_PARAMS['fx']/sample
+		# depth_samples[val] = sample
 
 	# Get reference image
-	file = sorted(os.listdir(config.IMAGE_DIR.format(folder)))[0]
+	file = ''
+	for f in sorted(os.listdir(config.IMAGE_DIR.format(folder))):
+		if f.endswith('.png'):
+			file = f
+			break
+
 	ref_img = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
 	ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2RGB)
 	for s in range(scale):
@@ -100,6 +106,7 @@ def dense_depth(folder, num_samples, pc_score = None) :
 
 		# TODO: Change naming convention
 		outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}'
+		print("Calculating photoconsistency score...")
 		pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
 		print("Finished computing unary...")
 

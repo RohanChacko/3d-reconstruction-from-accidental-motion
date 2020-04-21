@@ -53,7 +53,6 @@ CAMERA_PARAMS = dict(fx=1781.0,
 PS_PARAMS = dict(max_depth=4.0,
                 min_depth=2.0,
                 scale=2,
-                num_samples=16,
                 patch_radius=1)
 
 CRF_PARAMS = dict(iters=100,
