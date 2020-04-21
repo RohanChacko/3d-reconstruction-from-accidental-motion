@@ -70,7 +70,7 @@ def DenseCRF(unary, img, depth_samples, params, outfile='depth_map.png', show_un
 
 	cv2.imwrite(outfile, depth_map)
 
-def dense_depth(folder, num_samples, pc_path = None) :
+def dense_depth(folder, num_samples, pc_path = None, show_unary=False) :
 
 	scale = config.PS_PARAMS['scale']
 	max_depth = config.PS_PARAMS['max_depth']
@@ -115,7 +115,7 @@ def dense_depth(folder, num_samples, pc_path = None) :
 	outfile = f'{folder}_cost_volume_{depth_samples.shape[0]}_depth_map.png'
 	# Use photoconsistency score as unary potential
 	print("Applying Dense CRF to smoothen depth map")
-	depth_map = DenseCRF(pc_score, ref_img, depth_samples, config.CRF_PARAMS, outfile)
+	depth_map = DenseCRF(pc_score, ref_img, depth_samples, config.CRF_PARAMS, outfile, show_unary)
 	print("Finished solving CRF...")
 
 
@@ -125,5 +125,5 @@ parser.add_argument("--nsamples", help='Number of depth samples', default=16, re
 parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
 parser.add_argument("--show_unary", help='Save depth map with just unary (photoconsistency score) potentials', default=False)
 args = parser.parse_args()
-
+print(args.show_unary)
 dense_depth(args.folder, int(args.nsamples), pc_path=args.pc_cost, show_unary=args.show_unary)
