@@ -57,8 +57,8 @@ PS_PARAMS = dict(max_depth=4.0,
                 patch_radius=1)
 
 CRF_PARAMS = dict(iters=100,
-                pos_std=(3, 3),
-                rgb_std=(20, 20, 20),
-                weight=1,
+                pos_std="3, 3",
+                rgb_std="20, 20, 20",
+                weight=10,
                 max_penalty=0.25
                 )
