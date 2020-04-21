@@ -110,7 +110,7 @@ def plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, pat
 
     # Get all images
     all_img = []
-    for file in sorted(os.listdir(config.IMAGE_DIR.format(folder))) :
+    for file in sorted(os.listdir(config.IMAGE_DIR.format(folder)))[:len(R)] :  # Get as many images as the extrinsics available
 
         if file.endswith('.png') :
             im = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
