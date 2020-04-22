@@ -176,11 +176,16 @@ def plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, pat
         L1_diff = Sad(ref_img_patches, warp_patches)
         score = MergeScores(L1_diff, valid_ratio = 0.5)
 
-        # TODO : Border pixels take default value cost arr. Fix that
+        # Border pixels take values of the neighboring pixels
         cost_volume_arr[idx, patch_radius:height-patch_radius, patch_radius:width-patch_radius] = score.reshape((h,w))
-
+        cost_volume_arr[idx, 0: patch_radius, :] = cost_volume_arr[idx, patch_radius, :]
+        cost_volume_arr[idx, height-patch_radius+1:, :] = cost_volume_arr[idx, height-patch_radius, :]
+        cost_volume_arr[idx, :, 0: patch_radius] = cost_volume_arr[idx, :, patch_radius].reshape((cost_volume_arr[idx, :, patch_radius].shape[0],1))
+        cost_volume_arr[idx, :, width-patch_radius+1:] = cost_volume_arr[idx, :, width-patch_radius].reshape((cost_volume_arr[idx, :, width-patch_radius].shape[0],1))
 
     cost_volume_arr = Modulate(cost_volume_arr)
-    np.save(outfile, cost_volume_arr)
+
+    # Saving convention
+    np.savez_compressed(outfile, pc_cost=cost_volume_arr, dir=folder, max_d=max_depth, min_d=min_depth)
 
     return cost_volume_arr.astype('float32')
