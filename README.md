@@ -3,6 +3,7 @@
 Reconstructs a 3D scene by generating a dense depth map from a set of images capturing a scene.
 
 The algorithm first uses **KLT Tracking** to track features across all images. We use **Bundle Adjustment** using the Ceres Solver and estimate the extrinsic camera parameters. Finally, we solve a smooth dense map using a **DenseCRF** formulation.
+![Overview](thumbnail.png)
 
 #### Building Ceres Solver
 - `mkdir ceres-bin`
