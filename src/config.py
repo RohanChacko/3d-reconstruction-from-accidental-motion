@@ -1,11 +1,16 @@
 import cv2
-# import open3d as o3d
+import open3d as o3d
 # Image Directory
+
 IMAGE_DIR = '../datasets/{}_still'
 # IMAGE_DIR = '../datasets/stone6_still'
 
+OUTPUT_FOLDER = '../output/'
+
 # Extrinsics File
-EXTRINSIC_FILE = '../output/{}/extrinsics.csv'
+EXTRINSIC_FILE = '../output/extrinsics.csv'
+# EXTRINSIC_FILE = '../output/{}/exp1/extrinsics.csv'
+# NUM_IMAGES = 30
 
 # Initial Point Cloud
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -45,14 +50,14 @@ CERES_PARAMS = dict(
 
 CAMERA_PARAMS = dict(fx=1781.0,
                      fy=1781.0,
-                     cx=960,
-                     cy=540,
+                     cx=240,
+                     cy=424,
                      k1=0,
                      k2=0,
                      s=0,
                     )
-PS_PARAMS = dict(max_depth=4.0,
-                min_depth=2.0,
+PS_PARAMS = dict(max_depth=4,
+                min_depth=2,
                 scale=2,
                 patch_radius=1)
 
@@ -60,5 +65,4 @@ CRF_PARAMS = dict(iters=100,
                 pos_std="3,3",
                 rgb_std="20,20,20",
                 weight=1,
-                max_penalty=0.15
-                )
+                max_penalty=0.15)

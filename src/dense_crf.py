@@ -110,13 +110,13 @@ def dense_depth(args) :
 
 	# Get reference image
 	file = ''
-	for f in sorted(os.listdir(config.IMAGE_DIR.format(folder))):
-		if f.endswith('.png'):
+	for f in sorted(os.listdir(config.IMAGE_DIR)):
+		if f.endswith('.png') or f.endswith('.jpg'):
 			file = f
 			break
 
 	ref_img = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
-
+  
 	for s in range(scale):
 		ref_img = cv2.pyrDown(ref_img)
 	# Mean shifting image
@@ -127,12 +127,12 @@ def dense_depth(args) :
 	if pc_path is None :
 
 		# Perform plane sweep to calculate photo-consistency loss
-		outfile = f'../output/{folder}/cost_volume_{depth_samples.shape[0]}'
+		outfile = f'../output/cost_volume_{depth_samples.shape[0]}'
 		print("Calculating photoconsistency score...")
 		pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
 		print("Finished computing photoconsistency score...")
 
-	outfile = f'../output/{folder}/cost_volume_{depth_samples.shape[0]}_depth_map.png'
+	outfile = f'../output/cost_volume_{depth_samples.shape[0]}__{config.CRF_PARAMS["rgb_std"]}_depth_map.png'
 	crf_params = dict()
 	crf_params['iters'] = int(args.iters)
 	crf_params['pos_std'] = tuple(float(x) for x in args.p_std.split(','))
@@ -148,6 +148,7 @@ def dense_depth(args) :
 
 if __name__ == '__main__' :
 
+	folder = config.IMAGE_DIR
 	parser = argparse.ArgumentParser()
 	# General Params
 	parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
@@ -155,7 +156,7 @@ if __name__ == '__main__' :
 	parser.add_argument("--pc", help='Path to npz file', default=None)
 	parser.add_argument("--show_wta", help='Save WTA output from photoconsistency score', action='store_true')
 
-	# CRF Params
+  # CRF Params
 	parser.add_argument("--iters", help='Number of iters for CRF inference', default=config.CRF_PARAMS['iters'])
 	parser.add_argument("--p_std", help='Std. dev of positional term', default=config.CRF_PARAMS['pos_std'])
 	parser.add_argument("--c_std", help='Std. dev of color term', default=config.CRF_PARAMS['rgb_std'])

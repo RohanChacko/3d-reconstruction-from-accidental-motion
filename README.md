@@ -41,4 +41,5 @@ or
 - [x] KLT
 - [x] Filtering Good Points
 - [x] Bundle Adjustment
-- [ ] CRF Energy Minimization
+- [x] CRF Energy Minimization
+- [x] Integration
