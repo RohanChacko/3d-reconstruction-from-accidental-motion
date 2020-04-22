@@ -156,7 +156,7 @@ if __name__ == '__main__' :
 	parser.add_argument("--pc", help='Path to npz file', default=None)
 	parser.add_argument("--show_wta", help='Save WTA output from photoconsistency score', action='store_true')
 
-  # CRF Params
+  	# CRF Params
 	parser.add_argument("--iters", help='Number of iters for CRF inference', default=config.CRF_PARAMS['iters'])
 	parser.add_argument("--p_std", help='Std. dev of positional term', default=config.CRF_PARAMS['pos_std'])
 	parser.add_argument("--c_std", help='Std. dev of color term', default=config.CRF_PARAMS['rgb_std'])
