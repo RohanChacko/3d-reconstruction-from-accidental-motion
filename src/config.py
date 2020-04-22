@@ -2,10 +2,12 @@ import cv2
 import open3d as o3d
 # Image Directory
 # IMAGE_DIR = '../datasets/{}_still'
-IMAGE_DIR = '../datasets/stone6_still'
-
+IMAGE_DIR = '../datasets/stone4_still'
+# OUTPUT_FOLDER = '../output/'
 # Extrinsics File
-EXTRINSIC_FILE = '../output/{}/extrinsics.csv'
+EXTRINSIC_FILE = '../output/extrinsics.csv'
+# EXTRINSIC_FILE = '../output/{}/exp1/extrinsics.csv'
+# NUM_IMAGES = 30
 
 # Initial Point Cloud
 INITIAL_POINT_CLOUD = '../output/initial_point_cloud.ply'
@@ -51,14 +53,22 @@ CAMERA_PARAMS = dict(fx=1781.0,
                      k2=0,
                      s=0,
                     )
-PS_PARAMS = dict(max_depth=4.0,
-                min_depth=2.0,
+PS_PARAMS = dict(max_depth=4,
+                min_depth=2,
                 scale=2,
                 patch_radius=1)
 
 CRF_PARAMS = dict(iters=100,
                 pos_std="3, 3",
+                # rgb_std="4, 4, 19",
+
+                # rgb_std="27, 27, 27",
+                # rgb_std="28, 28, 28",
                 rgb_std="20, 20, 20",
-                weight=10,
+                # rgb_std="10, 10, 10",
+                # rgb_std="25, 25, 25",
+                # rgb_std="35, 35, 35",
+                # rgb_std="50, 50, 50",
+                weight=1,
                 max_penalty=0.25
                 )

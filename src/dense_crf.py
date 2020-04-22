@@ -34,7 +34,7 @@ def DenseCRF(unary, img, depth_samples, params, folder, outfile='depth_map.png',
 
 	# Get initial crude depth map from photoconsistency
 	if show_unary :
-		compute_unary_image(unary, depth_samples, outfile=f'../output/{folder}/cost_volume_{depth_samples.shape[0]}_unary.png')
+		compute_unary_image(unary, depth_samples, outfile=f'../output/cost_volume_{depth_samples.shape[0]}_unary.png')
 
 	# Normalize values for each pixel location
 	for r in range(unary.shape[1]):
@@ -100,12 +100,12 @@ def dense_depth(args) :
 
 	# Get reference image
 	file = ''
-	for f in sorted(os.listdir(config.IMAGE_DIR.format(folder))):
+	for f in sorted(os.listdir(config.IMAGE_DIR)):
 		if f.endswith('.png'):
 			file = f
 			break
 
-	ref_img = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
+	ref_img = cv2.imread(os.path.join(config.IMAGE_DIR, file))
 	ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2RGB)
 	for s in range(scale):
 		ref_img = cv2.pyrDown(ref_img)
@@ -113,12 +113,12 @@ def dense_depth(args) :
 	if pc_path is None :
 
 		# Perform plane sweep to calculate photo-consistency loss
-		outfile = f'../output/{folder}/cost_volume_{depth_samples.shape[0]}'
+		outfile = f'../output/cost_volume_{depth_samples.shape[0]}'
 		print("Calculating photoconsistency score...")
 		pc_score = plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius)
 		print("Finished computing photoconsistency score...")
 
-	outfile = f'../output/{folder}/cost_volume_{depth_samples.shape[0]}_depth_map.png'
+	outfile = f'../output/cost_volume_{depth_samples.shape[0]}__{config.CRF_PARAMS["rgb_std"]}_depth_map.png'
 	crf_params = dict()
 	crf_params['iters'] = int(args.iters)
 	crf_params['pos_std'] = tuple(float(x) for x in args.p_std.split(','))
@@ -134,10 +134,12 @@ def dense_depth(args) :
 
 if __name__ == '__main__' :
 
+	folder = config.IMAGE_DIR
 	parser = argparse.ArgumentParser()
 	# General Params
-	parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
-	parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
+
+	parser.add_argument("--folder", help='sub-directory in dataset dir', default="{}".format(folder.split('/')[-1]), required=False)
+	parser.add_argument("--nsamples", help='Number of depth samples', default=64, required=False)
 	parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
 	parser.add_argument("--show_unary", help='Save depth map with just unary (photoconsistency score) potentials', default=False)
 
@@ -157,3 +159,27 @@ if __name__ == '__main__' :
 	args = parser.parse_args()
 
 	dense_depth(args)
+
+	# parser = argparse.ArgumentParser()
+	# # General Params
+	# parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
+	# parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
+	# parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
+	# parser.add_argument("--show_unary", help='Save depth map with just unary (photoconsistency score) potentials', default=False)
+
+	# # CRF Params
+	# parser.add_argument("--iters", help='Number of iters for CRF inference', default=config.CRF_PARAMS['iters'])
+	# parser.add_argument("--p_std", help='Std. dev of positional term', default=config.CRF_PARAMS['pos_std'])
+	# parser.add_argument("--c_std", help='Std. dev of color term', default=config.CRF_PARAMS['rgb_std'])
+	# parser.add_argument("--wt", help='Weight for truncated linear', default=config.CRF_PARAMS['weight'])
+	# parser.add_argument("--max_p", help='Max Penalty for truncated linear', default=config.CRF_PARAMS['max_penalty'])
+
+	# # Plane sweep Params
+	# parser.add_argument("--max_d", help='Max depth of computed of 3D scene', default=config.PS_PARAMS['max_depth'])
+	# parser.add_argument("--min_d", help='Min depth of computed of 3D scene', default=config.PS_PARAMS['min_depth'])
+	# parser.add_argument("--scale", help='Scale of image (downsampling)', default=config.PS_PARAMS['scale'])
+	# parser.add_argument("--patch_rad", help='Patch radius for photoconsistency', default=config.PS_PARAMS['patch_radius'])
+
+	# args = parser.parse_args()
+
+	# dense_depth(args)
