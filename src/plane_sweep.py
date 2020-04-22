@@ -1,105 +1,186 @@
+import os
 import cv2
+import csv
+import config
+import utilities
 import numpy as np
+from tqdm import tqdm
+from numpy.lib.stride_tricks import as_strided
 
-def Sad(img1, img2) :
-    
-    # img1, img2 are patches from two different images
 
-    err = 0
+def Sad(ref_patch, warp_patch) :
 
-    for r in range(img1.shape[0]) :
-        for c in range(img1.shape[1]:
-                diff = img1[r, c] - img2[r, c]
-                err += np.abs(diff)
+    '''
+    Calculates L1 Loss between two grayscale image patches
+    N : Total number of warp images
+    P : Total number of patches per image
+    w : Length of one side of patch
 
+    Dimension of patch ndarray : N x P x (w*w)
+    Returned array dim : N x P
+    '''
+
+    # err = np.sum(np.abs(warp_patch - ref_patch[:warp_patch.shape[0], :warp_patch.shape[1]]))
+    err = np.sum(np.abs(warp_patch - ref_patch), axis=2)
     return err
 
 
-def HomographyFrom(cam, ref_cam, dep):
-    
-    K1 = cam1.K()
-    R1 = cam1.R()
-    C1 = cam1.C()
-    K2 = ref_cam.K()
-    R2 = ref_cam.R()
-    C2 = ref_cam.C()
+def HomographyFrom(K, C1, R1, C2, R2, dep):
 
-    H  = d * K2 @ R2 @ R1.T * np.linalg.inv(K1)
-    H[2,:] += K2 @ R2 @ (C1 - C2)
-    
+    # C1, R1 : Reference Image
+    H  = dep * K @ R2 @ R1.T @ np.linalg.inv(K)
+    H[:,2] += K @ R2 @ (C1 - C2)
     return H
 
 
-def MergeScores(scores):
-    score = 0
-    valid_ratio = 0.5
-    num_valid_scores = len(scores) * valid_ratio
-  
-    scores = sort(scores)
-    for i in range(num_valid_scores):
-        score += scores[i]
-  
-    score /= num_valid_scores
+def MergeScores(scores, valid_ratio = 0.5):
+    '''
+    Takes the average of top k values in array. k == valid_scores.
+    N : Total number of warp images
+    P : Total number of patches per image
+
+    Dimension of scores array: N x P
+    Dimension of returned array: (N*valid_ratio) x P
+    '''
+
+    num_valid_scores = int(scores.shape[0] * valid_ratio)
+
+    ix = np.argpartition(scores, num_valid_scores, axis=0)
+    ix = ix[:num_valid_scores,:]
+
+    srt = np.take_along_axis(scores, ix, axis=0)
+    score = np.sum(srt, axis=0) / num_valid_scores
+
     return score
 
-def plane_sweep(min_depth=2, max_depth=4, scale = 2, num_samples=64):
+def GetMin(values, size):
+    '''
+    Get smallest two values in array
+    '''
+
+    assert(size>1)
+
+    f = 0
+    s = 0
+
+    f, s = np.partition(values, 1)[0:2]
+
+    return f, s
 
 
-    # inverse perspetive/depth sampling
-    depth_samples = []
-    step = 1.0 / (num_samples - 1.0)
-    for i in range(num_samples):
-        sample = (max_depth * min_depth) / (max_depth - (max_depth - min_depth) * i *step)
-        depth_samples.append(sample)
-    
+def Modulate(cost_volume_arr):
+
+    first = 0
+    second = 0
+    confidence = 0
+    num_samples = cost_volume_arr.shape[0]
+
+    for r in range(cost_volume_arr.shape[1]):
+        for c in range(cost_volume_arr.shape[2]):
+
+            values = cost_volume_arr[:, r, c]
+            first, second = GetMin(values, num_samples)
+            confidence = (second + 1) / (first + 1)
+            cost_volume_arr[:, r, c] = values * confidence
+
+    return cost_volume_arr
+
+def plane_sweep(folder, outfile, depth_samples, min_depth, max_depth, scale, patch_radius):
+
+    print(f"Number of depth samples: {depth_samples.shape[0]}")
+
+    # Intrinsics, Camera centers, Rotation mtx
+    K = utilities.construct_camera_matrix(config.CAMERA_PARAMS)
+    C = []
+    R = []
+
+    # Get extrinsics
+    with open(config.EXTRINSIC_FILE) as ext_file:
+        csv_reader = csv.reader(ext_file, delimiter=',')
+
+        for row in csv_reader:
+
+            p = [float(r) for r in row[:-1]]
+            rot, _ = cv2.Rodrigues(np.array(p[:3]))
+            trans = np.array(p[3:6])
+            c = -1 * np.linalg.inv(rot) @ trans
+
+            C.append(c)
+            R.append(rot)
+
+    # Get all images
+    # total_images = config.NUM_IMAGES
+    all_img = []
+    # i = 0
+    for file in sorted(os.listdir(config.IMAGE_DIR))[:len(R)] :  # Get as many images as the extrinsics available
+
+        if file.endswith('.png') or file.endswith('.jpg') :
+            im = cv2.imread(os.path.join(config.IMAGE_DIR, file))
+            all_img.append(im)
+            # i +=1
+            # if i > total_images:
+            #     break
 
     scaled_gray_images = []
-    for i in all_images :
-        
-        img = np.int32(img)
-        img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    for img in all_img :
+        img = img.astype(np.float32)
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
         for s in range(scale):
-            img = cv2.pyrDown(img)
-        scaled_gray_images.append(img)
-        
-  height, width = ref_image.shape
-  num_images = 99
-  patch_radius = 1
-  
-  cost_volume_arr = np.zeros((num_samples, height, width))
-  cost_volume = 0
+            gray_img = cv2.pyrDown(gray_img)
 
-  ref_camera_ext = # Reference camera extrinsics
-  ref_image = # ref image
+        scaled_gray_images.append(gray_img)
 
-  for d in range(num_samples):
+    ref_img = scaled_gray_images[0]
+    height, width = ref_img.shape
 
-    depth = depth_samples[d]
-    homographies = np.zeros((num_images, 3, 3))
-    warped_images = []
-    
-    for i in range(num_images) :
-        
-        h = HomographyFrom(cam[idx], ref_camera, depth)
-        actual_scale = 2**scale
-        h[:2,:] *= actual_scale
-        h[2,:] *= actual_scale
-        homographies[i,:,:] = h
+    num_images = len(all_img)
+    cost_volume_arr = np.zeros((depth_samples.shape[0], height, width))
 
-    # Assume 0th image is reference image
-    for i in range(1,num_images):
-      warp = cv2.warpPerspective(scaled_gray_images[i], homographies[i], ref_image.shape, cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
-      warped_images.append(warp)
-    
-    
-    # len(scores) == len(warped_images)
-    scores = []
-    for x in range(width - patch_radius):
-        for y in range(height - patch_radius):
-            p2 = ref_image[y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
-            
-            for i in range(len(warped_images)):
-                p1 = warped_images[i][y - patch_radius :y + patch_radius + 1, x - patch_radius : x + patch_radius + 1]
-                scores.append(Sad(p1, p2))
+    for idx, depth in enumerate(tqdm(depth_samples)):
 
-        cost_volume_arr[d,y,x] = MergeScores(scores)
+        homographies = np.zeros((num_images, 3, 3))
+        warped_images = []
+
+        for ind in range(num_images) :
+
+            h = HomographyFrom(K, C[0], R[0], C[ind], R[ind], depth)
+            actual_scale = 2**scale
+            h[:,:2] *= actual_scale
+            h[2,:] *= actual_scale
+            homographies[ind,:,:] = h
+
+        # Assume 0th image is reference image
+        for i in range(1, num_images):
+            warp = cv2.warpPerspective(scaled_gray_images[i], homographies[i], ref_img.shape[::-1], cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
+            warped_images.append(warp)
+
+
+        ref_img_patches = as_strided(ref_img, shape=(ref_img.shape[0] - 2*patch_radius,
+                                    ref_img.shape[1] - 2*patch_radius, 2*patch_radius + 1, 2*patch_radius + 1),
+                                    strides=ref_img.strides + ref_img.strides, writeable=False)
+
+        h, w, _, _ = ref_img_patches.shape
+        patch_size = 2*patch_radius + 1
+        ref_img_patches = ref_img_patches.reshape((ref_img_patches.shape[0]*ref_img_patches.shape[1], patch_size**2))
+        warp_patches = np.zeros((len(warped_images), ref_img_patches.shape[0], ref_img_patches.shape[1]))
+        for i in range(len(warped_images)):
+
+            x = as_strided(warped_images[i], shape=(warped_images[i].shape[0] - 2*patch_radius,
+                            warped_images[i].shape[1] - 2*patch_radius, 2*patch_radius + 1, 2*patch_radius + 1),
+                            strides=warped_images[i].strides + warped_images[i].strides, writeable=False)
+
+            x = x.reshape((x.shape[0]*x.shape[1], patch_size**2))
+            warp_patches[i,:,:] = x
+
+        L1_diff = Sad(ref_img_patches, warp_patches)
+        score = MergeScores(L1_diff, valid_ratio = 0.5)
+
+        # TODO : Border pixels take default value cost arr. Fix that
+        cost_volume_arr[idx, patch_radius:height-patch_radius, patch_radius:width-patch_radius] = score.reshape((h,w))
+
+
+    cost_volume_arr = Modulate(cost_volume_arr)
+    np.save(outfile, cost_volume_arr)
+
+    return cost_volume_arr.astype('float32')

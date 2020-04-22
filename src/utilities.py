@@ -1,9 +1,9 @@
 import cv2
-import open3d as o3d
+# import open3d as o3d
 import numpy as np
 import config
 import matplotlib.pyplot as plt
-import process_extrinsics
+# import process_extrinsics
 
 
 def gray(image):
@@ -23,7 +23,7 @@ def construct_camera_matrix(camera_params):
         [                  0,                   0,                  1],
     ])
 
-    return K 
+    return K
 
 def back_project_points(K, imagePts):
     '''
@@ -56,7 +56,7 @@ def print_camera_params():
     for i in range(3):
         rot = '%d %d %d\n' % (rotation[i, 0], rotation[i, 1], rotation[i, 2])
         content = content + rot
-    
+
     content = content + '0 0 0\n'
     return content
 
@@ -77,7 +77,7 @@ def read_extrinsics_params(file):
 
 def params_to_transfomation_mtx(params):
     '''
-    Function that takes in the input Rodrigous parameters and 
+    Function that takes in the input Rodrigous parameters and
     outputs a transformation matrix
 
     Input:
@@ -97,16 +97,16 @@ def params_to_transfomation_mtx(params):
         transformation_matrix = np.eye(4)
         transformation_matrix[0:3, 0:3] = rotation_matrix
         transformation_matrix[0:3, 3] = translation
-        
+
         transformations.append(transformation_matrix)
-    
+
     transformations = np.array(transformations)
 
     return transformations
 
 def params_to_projection_mtx(params):
     '''
-    Function that takes in the input Rodrigous parameters and 
+    Function that takes in the input Rodrigous parameters and
     outputs a projection matrix
 
     Input:
@@ -131,9 +131,9 @@ def params_to_projection_mtx(params):
 
         mat = transformation_matrix[:3, :]
         projection_matrix = K @ mat
-        
+
         projections.append(projection_matrix)
-    
+
     projections = np.array(projections)
 
     return projections
@@ -146,7 +146,7 @@ def get_transformations(file):
 def get_projections(file):
     params = read_extrinsics_params(file)
     projections = params_to_projection_mtx(params)
-    return projections 
+    return projections
 
 def custom_draw_geometry_with_camera_trajectory(pcd):
     vis = o3d.visualization.Visualizer()
@@ -169,10 +169,10 @@ def point_cloud_2_depth_map(pcd):
 
     min_depth = np.min(points_3D[2, :])
     max_depth = np.max(points_3D[2, :])
-    
+
     camera_params = config.CAMERA_PARAMS
     transformations = get_transformations(config.EXTRINSIC_FILE)
-    
+
     K = construct_camera_matrix(camera_params)
 
     points_3D = np.vstack((points_3D, np.ones((1, points_3D.shape[1]))))
@@ -182,7 +182,7 @@ def point_cloud_2_depth_map(pcd):
     image_coordinates = np.int0(image_coordinates / image_coordinates[2, :])
 
     pixel_depth_val = 255 - ((points_3D[2, :] - min_depth) * 255 / (max_depth - min_depth))
- 
+
     depth_image = np.zeros((camera_params['cy'] * 2, camera_params['cx'] * 2))
 
     height_image = int(camera_params['cy'] * 2)
