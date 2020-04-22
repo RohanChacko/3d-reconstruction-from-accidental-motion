@@ -54,7 +54,7 @@ def DenseCRF(unary, img, depth_samples, params, folder, max_depth, min_depth, ou
 	d.setUnaryEnergy(unary)
 	# Add color-dependent term, i.e. features are (x,y,r,g,b)
 	d.addPairwiseBilateral(sxy=pos_std, srgb=rgb_std, rgbim=img, compat=np.array([weight, labels*max_penalty]), kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-
+	# d.addPairwiseGaussian(sxy=(3,3), compat=0.3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
 	# Run inference steps
 	Q = d.inference(iters)
 
