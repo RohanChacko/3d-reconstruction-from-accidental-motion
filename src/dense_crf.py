@@ -19,7 +19,7 @@ def compute_unary_image(unary, depth_samples, outfile):
 	gd_im = np.zeros((unary.shape[1], unary.shape[2]))
 	for i in range(unary.shape[1]):
 		for j in range(unary.shape[2]):
-			gd_im[i,j] = (((depth_samples[gd[i,j]] - depth_samples[-1]) * 255) / (depth_samples[0] - depth_samples[-1]) )
+			gd_im[i,j] = ((depth_samples[gd[i,j]] - np.min(depth_samples)) * 255.0) / (np.max(depth_samples) - np.min(depth_samples))
 
 	cv2.imwrite(outfile, gd_im)
 
@@ -42,10 +42,11 @@ def DenseCRF(unary, img, depth_samples, params, folder, max_depth, min_depth, ou
 			if np.sum(unary[:, r, c]) <= 1e-9:
 				unary[:, r, c] = 0.0
 			else:
-				unary[:, r, c] = (unary[:, r, c]/np.sum(unary[:, r, c]))
+				unary[:, r, c] = unary[:, r, c]/np.sum(unary[:, r, c])
 
 	# Convert to class probabilities for each pixel location
 	unary = unary_from_softmax(unary)
+
 	d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], labels)
 
 	# Add photoconsistency score as uanry potential. 16-size vector
@@ -61,28 +62,26 @@ def DenseCRF(unary, img, depth_samples, params, folder, max_depth, min_depth, ou
 	MAP = np.argmax(Q, axis=0).reshape((img.shape[:2]))
 	depth_map = np.zeros((MAP.shape[0], MAP.shape[1]))
 
-	step = 1.0 / (depth_samples.shape[0] - 1.0)
 	for i in range(MAP.shape[0]):
 		for j in range(MAP.shape[1]):
-
-			depth_map[i,j] = config.CAMERA_PARAMS['fx'] / ((max_depth * min_depth) / (max_depth - (max_depth - min_depth) * MAP[i,j] * step))
+			depth_map[i,j] = depth_samples[MAP[i,j]]
 
 	min_val = np.min(depth_map)
 	max_val = np.max(depth_map)
 
 	for i in range(MAP.shape[0]):
 		for j in range(MAP.shape[1]):
-
 			depth_map[i,j] = ((depth_map[i,j] - min_val)/(max_val - min_val)) * 255.0
-	
-	depth_map = cv2.resize(depth_map, (config.CAMERA_PARAMS['cx'] * 2,config.CAMERA_PARAMS['cy'] * 2), interpolation=cv2.INTER_LINEAR)
+
+	# Upsampling depth map
+	# depth_map = cv2.resize(depth_map, (config.CAMERA_PARAMS['cx'] * 2,config.CAMERA_PARAMS['cy'] * 2), interpolation=cv2.INTER_LINEAR)
 	cv2.imwrite(outfile, depth_map)
 
 def dense_depth(args) :
 
 	folder = args.folder
 	num_samples = int(args.nsamples)
-	pc_path = args.pc_cost
+	pc_path = args.pc
 	show_wta = args.show_wta
 
 	scale = int(args.scale)
@@ -92,7 +91,12 @@ def dense_depth(args) :
 
 	pc_score = 0
 	if pc_path is not None :
-		pc_score = np.load(pc_path)
+
+		load_d = np.load(pc_path)
+		folder = load_d['dir']
+		min_depth = load_d['min_d']
+		max_depth = load_d['max_d']
+		pc_score = load_d['pc_cost']
 		num_samples = pc_score.shape[0]
 
 	# Create depth samples in the specified depth range
@@ -112,12 +116,13 @@ def dense_depth(args) :
 			break
 
 	ref_img = cv2.imread(os.path.join(config.IMAGE_DIR.format(folder), file))
-	ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2RGB)
+
 	for s in range(scale):
 		ref_img = cv2.pyrDown(ref_img)
 	# Mean shifting image
 	ref_img = cv2.pyrMeanShiftFiltering(ref_img, 20, 20, 1)
-	cv2.imwrite('meanshift.png', ref_img)
+
+	ref_img = cv2.cvtColor(ref_img, cv2.COLOR_BGR2Lab)
 
 	if pc_path is None :
 
@@ -147,7 +152,7 @@ if __name__ == '__main__' :
 	# General Params
 	parser.add_argument("--folder", help='sub-directory in dataset dir', default='stone6', required=True)
 	parser.add_argument("--nsamples", help='Number of depth samples', default=16, required=True)
-	parser.add_argument("--pc_cost", help='Path to photoconsistency cost array', default=None)
+	parser.add_argument("--pc", help='Path to npz file', default=None)
 	parser.add_argument("--show_wta", help='Save WTA output from photoconsistency score', action='store_true')
 
 	# CRF Params
