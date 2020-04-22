@@ -2,7 +2,7 @@ import cv2
 import open3d as o3d
 # Image Directory
 # IMAGE_DIR = '../datasets/{}_still'
-IMAGE_DIR = '../datasets/chacko_still'
+IMAGE_DIR = '../datasets/chair_still'
 # OUTPUT_FOLDER = '../output/'
 # Extrinsics File
 EXTRINSIC_FILE = '../output/extrinsics.csv'
