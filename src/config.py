@@ -2,7 +2,7 @@ import cv2
 import open3d as o3d
 # Image Directory
 # IMAGE_DIR = '../datasets/{}_still'
-IMAGE_DIR = '../datasets/stone4_still'
+IMAGE_DIR = '../datasets/chacko_still'
 # OUTPUT_FOLDER = '../output/'
 # Extrinsics File
 EXTRINSIC_FILE = '../output/extrinsics.csv'
@@ -47,8 +47,8 @@ CERES_PARAMS = dict(
 
 CAMERA_PARAMS = dict(fx=1781.0,
                      fy=1781.0,
-                     cx=960,
-                     cy=540,
+                     cx=240,
+                     cy=424,
                      k1=0,
                      k2=0,
                      s=0,
@@ -60,15 +60,7 @@ PS_PARAMS = dict(max_depth=4,
 
 CRF_PARAMS = dict(iters=100,
                 pos_std="3, 3",
-                # rgb_std="4, 4, 19",
-
-                # rgb_std="27, 27, 27",
-                # rgb_std="28, 28, 28",
                 rgb_std="20, 20, 20",
-                # rgb_std="10, 10, 10",
-                # rgb_std="25, 25, 25",
-                # rgb_std="35, 35, 35",
-                # rgb_std="50, 50, 50",
                 weight=1,
-                max_penalty=0.25
+                max_penalty=0.3
                 )

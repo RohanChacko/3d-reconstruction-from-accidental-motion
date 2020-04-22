@@ -101,7 +101,7 @@ def dense_depth(args) :
 	# Get reference image
 	file = ''
 	for f in sorted(os.listdir(config.IMAGE_DIR)):
-		if f.endswith('.png'):
+		if f.endswith('.png') or f.endswith('.jpg'):
 			file = f
 			break
 
